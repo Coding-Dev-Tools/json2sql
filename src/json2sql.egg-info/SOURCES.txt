@@ -1,0 +1,13 @@
+README.md
+pyproject.toml
+src/json2sql/__init__.py
+src/json2sql/cli.py
+src/json2sql/converter.py
+src/json2sql/dialects.py
+src/json2sql.egg-info/PKG-INFO
+src/json2sql.egg-info/SOURCES.txt
+src/json2sql.egg-info/dependency_links.txt
+src/json2sql.egg-info/entry_points.txt
+src/json2sql.egg-info/requires.txt
+src/json2sql.egg-info/top_level.txt
+tests/test_converter.py

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "json2sql"
+version = "0.1.0"
+description = "Convert JSON files/datasets to SQL INSERT statements"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Revenue Holdings"}]
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-cov"]
+
+[project.scripts]
+json2sql = "json2sql.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
