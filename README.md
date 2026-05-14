@@ -1,6 +1,12 @@
 # json2sql
 
-Convert JSON files/datasets to SQL INSERT statements. Supports nested JSON (flattens to relational tables), PostgreSQL, MySQL, and SQLite output dialects.
+Stop writing INSERT statements by hand. json2sql converts JSON files and API payloads into production-ready SQL in one command — with smart type inference, nested JSON flattening, and multi-dialect support.
+
+[![PyPI](https://img.shields.io/pypi/v/json2sql)](https://pypi.org/project/json2sql/)
+[![Python](https://img.shields.io/pypi/pyversions/json2sql)](https://pypi.org/project/json2sql/)
+[![License](https://img.shields.io/pypi/l/json2sql)](https://github.com/Coding-Dev-Tools/json2sql/blob/main/LICENSE)
+
+**Why json2sql?** If you've ever piped data between systems, written ETL glue code, or manually crafted INSERT queries from JSON — you've felt this pain. json2sql handles the conversion in a single CLI call. Nested objects? Flattened automatically. PostgreSQL vs MySQL vs SQLite? Choose your dialect. Teams ship faster when they don't have to hand-roll data import scripts.
 
 ## Install
 
@@ -38,8 +44,35 @@ json2sql convert nested_data.json --flatten
 - **Pipe support**: Read from stdin for pipeline usage
 - **Zero dependencies**: Only Python 3.10+ required (typer for CLI)
 
-## Revenue
+## Pricing
 
-- **Free tier**: Up to 1,000 rows per conversion
-- **Pro tier** ($19/mo): Unlimited rows, batch processing, schema generation
-- **Team tier** ($49/mo): API access, CI/CD integration, priority support
+One license covers all Revenue Holdings CLI tools. Pricing is per-seat.
+
+| Tier | Price | Best For |
+|------|-------|----------|
+| **Open Source** | $0 | Individual devs, OSS projects — CLI only, local runs |
+| **Pro** | **$29/mo** ($23 billed annually) | Professional devs — unlimited rows, batch processing, schema gen |
+| **Team** | **$79/mo** ($63 billed annually) | Teams up to 5 — API access, CI/CD integration, priority support |
+| **Enterprise** | **$199/mo** (custom) | Organizations — SSO/SAML, RBAC, dedicated support, SLA |
+
+🔹 **No lock-in**: CLI works fully offline on the free tier — no telemetry, no phone-home.  
+🔹 **Annual billing**: Save 20%.  
+🔹 **Education / OSS**: Free Pro tier for verified students and open-source projects.  
+
+### Per-Tier Features
+
+| Feature | OSS | Pro | Team | Enterprise |
+|---------|:---:|:---:|:----:|:----------:|
+| Convert JSON → SQL | ✓ | ✓ | ✓ | ✓ |
+| Unlimited rows | — | ✓ | ✓ | ✓ |
+| Batch processing | — | ✓ | ✓ | ✓ |
+| Schema generation | — | ✓ | ✓ | ✓ |
+| API access | — | — | ✓ | ✓ |
+| CI/CD integration | — | — | ✓ | ✓ |
+| Priority support | Community | 24h | 8h | Dedicated |
+
+---
+
+<p align="center">
+  <sub>Part of <a href="https://coding-dev-tools.github.io/revenueholdings.dev/">Revenue Holdings</a> — CLI tools built by autonomous AI.</sub>
+</p>
