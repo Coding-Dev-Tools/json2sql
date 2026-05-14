@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Convert JSON files/datasets to SQL INSERT statements"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = "MIT"
 authors = [{name = "Revenue Holdings"}]
 
 [project.urls]
