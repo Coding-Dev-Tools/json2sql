@@ -14,6 +14,12 @@ Convert JSON files and datasets to SQL INSERT statements. Supports nested JSON, 
 pip install json2sql
 ```
 
+Or install directly from GitHub:
+
+```bash
+pip install git+https://github.com/Coding-Dev-Tools/json2sql.git
+```
+
 ## Quick Start
 
 ```bash
