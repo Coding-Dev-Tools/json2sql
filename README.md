@@ -57,31 +57,32 @@ sqlite3 test.db < seed.sql
 
 ## Pricing
 
-One license covers all Revenue Holdings CLI tools. Pricing is per-seat.
+json2sql is one of eight tools in the Revenue Holdings suite. One license covers all CLI tools.
 
-| Tier | Price | Best For |
+| Plan | Price | Best For |
 |------|-------|----------|
-| **Open Source** | $0 | Individual devs, OSS projects — CLI only, limited rows |
-| **Pro** | **$29/mo** ($23 billed annually) | Professional devs — unlimited rows, batch processing |
-| **Team** | **$79/mo** ($63 billed annually) | Teams up to 5 — API access, CI/CD integration, priority support |
-| **Enterprise** | **$199/mo** (custom) | Organizations — compliance reports, RBAC, SSO, SLA |
+| **Free** | $0 | Individual devs, OSS — CLI only, limited rows |
+| **json2sql Individual** | **$9/mo** ($7 billed annually) | Professional devs — unlimited rows, batch processing |
+| **Suite (all 8 tools)** | **$49/mo** ($39 billed annually) | Full Revenue Holdings toolkit — 40% savings |
+| **Team** | **$79/mo** ($63 billed annually) | Up to 5 devs — API access, CI/CD integration, priority support |
+| **Enterprise** | Custom | SSO, RBAC, compliance reports, dedicated support |
 
-🔹 **No lock-in**: CLI works fully offline on the free tier — no telemetry, no phone-home.  
+🔹 **No lock-in**: CLI works fully offline on the free tier — no telemetry, no phone-home.
 🔹 **Annual billing**: Save 20%.
 
 ### Per-Tier Features
 
-| Feature | OSS | Pro | Team | Enterprise |
-|---------|:---:|:---:|:----:|:----------:|
-| CLI: convert, pipe | ✓ | ✓ | ✓ | ✓ |
-| Unlimited rows per conversion | — | ✓ | ✓ | ✓ |
-| Batch processing | — | ✓ | ✓ | ✓ |
-| Schema generation | — | ✓ | ✓ | ✓ |
-| API access | — | — | ✓ | ✓ |
-| Compliance reports | — | — | — | ✓ |
-| RBAC | — | — | — | ✓ |
-| SSO / SAML / OIDC | — | — | — | ✓ |
-| Priority support | Community | 24h | 8h | Dedicated |
+| Feature | Free | json2sql | Suite | Team | Enterprise |
+|---------|:----:|:--------:|:-----:|:----:|:----------:|
+| CLI: convert, pipe | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Unlimited rows per conversion | — | ✓ | ✓ | ✓ | ✓ |
+| Batch processing | — | ✓ | ✓ | ✓ | ✓ |
+| Schema generation | — | ✓ | ✓ | ✓ | ✓ |
+| API access | — | — | — | ✓ | ✓ |
+| Compliance reports | — | — | — | — | ✓ |
+| RBAC | — | — | — | — | ✓ |
+| SSO / SAML / OIDC | — | — | — | — | ✓ |
+| Priority support | Community | 24h | 24h | 8h | Dedicated |
 
 ---
 
