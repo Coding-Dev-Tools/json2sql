@@ -1,14 +1,14 @@
 # json2sql
 
-Stop writing INSERT statements by hand. json2sql converts JSON files and API payloads into production-ready SQL in one command — with smart type inference, nested JSON flattening, and multi-dialect support.
+Convert JSON files and datasets to SQL INSERT statements. Supports nested JSON, PostgreSQL, MySQL, and SQLite output dialects.
 
 [![PyPI](https://img.shields.io/pypi/v/json2sql)](https://pypi.org/project/json2sql/)
 [![Python](https://img.shields.io/pypi/pyversions/json2sql)](https://pypi.org/project/json2sql/)
 [![License](https://img.shields.io/pypi/l/json2sql)](https://github.com/Coding-Dev-Tools/json2sql/blob/main/LICENSE)
 
-**Why json2sql?** If you've ever piped data between systems, written ETL glue code, or manually crafted INSERT queries from JSON — you've felt this pain. json2sql handles the conversion in a single CLI call. Nested objects? Flattened automatically. PostgreSQL vs MySQL vs SQLite? Choose your dialect. Teams ship faster when they don't have to hand-roll data import scripts.
+**Why json2sql?** Moving data from JSON into a database should be one command, not a script you maintain. json2sql takes JSON files — flat or nested — and produces correct SQL INSERT statements in your dialect of choice. Nested objects are automatically flattened into relational tables. Arrays become multiple INSERT rows. Type inference handles strings, numbers, booleans, and nulls without configuration. Pipe data from stdin, specify the table name, and get clean SQL out. Zero dependencies beyond Python 3.10+ and the CLI.
 
-## Install
+## Installation
 
 ```bash
 pip install json2sql
@@ -17,7 +17,7 @@ pip install json2sql
 ## Quick Start
 
 ```bash
-# Basic usage - converts JSON to SQL INSERT statements
+# Basic usage — converts JSON to SQL INSERT statements
 json2sql convert data.json
 
 # Specify output dialect
@@ -44,31 +44,43 @@ json2sql convert nested_data.json --flatten
 - **Pipe support**: Read from stdin for pipeline usage
 - **Zero dependencies**: Only Python 3.10+ required (typer for CLI)
 
+## CI/CD Integration
+
+```bash
+# Generate SQL as part of a data pipeline
+cat data.json | json2sql convert --dialect postgres --table events > events.sql
+
+# Use in GitHub Actions to prepare test data
+json2sql convert fixtures.json --dialect sqlite -o seed.sql
+sqlite3 test.db < seed.sql
+```
+
 ## Pricing
 
 One license covers all Revenue Holdings CLI tools. Pricing is per-seat.
 
 | Tier | Price | Best For |
 |------|-------|----------|
-| **Open Source** | $0 | Individual devs, OSS projects — CLI only, local runs |
-| **Pro** | **$29/mo** ($23 billed annually) | Professional devs — unlimited rows, batch processing, schema gen |
+| **Open Source** | $0 | Individual devs, OSS projects — CLI only, limited rows |
+| **Pro** | **$29/mo** ($23 billed annually) | Professional devs — unlimited rows, batch processing |
 | **Team** | **$79/mo** ($63 billed annually) | Teams up to 5 — API access, CI/CD integration, priority support |
-| **Enterprise** | **$199/mo** (custom) | Organizations — SSO/SAML, RBAC, dedicated support, SLA |
+| **Enterprise** | **$199/mo** (custom) | Organizations — compliance reports, RBAC, SSO, SLA |
 
 🔹 **No lock-in**: CLI works fully offline on the free tier — no telemetry, no phone-home.  
-🔹 **Annual billing**: Save 20%.  
-🔹 **Education / OSS**: Free Pro tier for verified students and open-source projects.  
+🔹 **Annual billing**: Save 20%.
 
 ### Per-Tier Features
 
 | Feature | OSS | Pro | Team | Enterprise |
 |---------|:---:|:---:|:----:|:----------:|
-| Convert JSON → SQL | ✓ | ✓ | ✓ | ✓ |
-| Unlimited rows | — | ✓ | ✓ | ✓ |
+| CLI: convert, pipe | ✓ | ✓ | ✓ | ✓ |
+| Unlimited rows per conversion | — | ✓ | ✓ | ✓ |
 | Batch processing | — | ✓ | ✓ | ✓ |
 | Schema generation | — | ✓ | ✓ | ✓ |
 | API access | — | — | ✓ | ✓ |
-| CI/CD integration | — | — | ✓ | ✓ |
+| Compliance reports | — | — | — | ✓ |
+| RBAC | — | — | — | ✓ |
+| SSO / SAML / OIDC | — | — | — | ✓ |
 | Priority support | Community | 24h | 8h | Dedicated |
 
 ---
@@ -76,3 +88,7 @@ One license covers all Revenue Holdings CLI tools. Pricing is per-seat.
 <p align="center">
   <sub>Part of <a href="https://coding-dev-tools.github.io/revenueholdings.dev/">Revenue Holdings</a> — CLI tools built by autonomous AI.</sub>
 </p>
+
+## License
+
+MIT

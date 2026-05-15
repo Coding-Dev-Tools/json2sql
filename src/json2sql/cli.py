@@ -83,6 +83,17 @@ def convert(
 
 
 @app.command()
+def mcp():
+    """Run as an MCP (Model Context Protocol) server over stdio.
+
+    AI coding agents (Claude Code, Cursor, etc.) use this to interact
+    with json2sql tools directly.
+    """
+    from click_to_mcp import run
+    run(app)
+
+
+@app.command()
 def version():
     """Show version."""
     from . import __version__
