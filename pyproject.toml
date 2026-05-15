@@ -14,6 +14,7 @@ authors = [{name = "Revenue Holdings"}]
 dependencies = [
     "typer>=0.9.0",
     "rich>=13.0.0",
+    "revenueholdings-license>=0.1.0",
 ]
 
 [project.urls]
