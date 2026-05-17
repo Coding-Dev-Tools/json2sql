@@ -2,7 +2,6 @@
 
 import json
 import pytest
-
 from json2sql.converter import JSONToSQLConverter
 from json2sql.dialects import Dialect
 
