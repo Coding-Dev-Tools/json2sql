@@ -112,3 +112,12 @@ json2sql is one of eight tools in the Revenue Holdings suite. One license covers
 
 MIT
 
+
+
+## Install via npm
+
+```bash
+npm install -g json2sql-cli
+```
+
+Then run: `json2sql --help`
