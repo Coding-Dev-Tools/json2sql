@@ -1,0 +1,33 @@
+{
+  "name": "json2sql-cli",
+  "version": "0.1.0",
+  "description": "Convert JSON data to SQL INSERT statements. CLI tool for transforming JSON files/streams into relational SQL.",
+  "author": "Revenue Holdings <engineering@revenueholdings.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Coding-Dev-Tools/json2sql.git"
+  },
+  "homepage": "https://github.com/Coding-Dev-Tools/json2sql#readme",
+  "bugs": {
+    "url": "https://github.com/Coding-Dev-Tools/json2sql/issues"
+  },
+  "bin": {
+    "json2sql": "cli.js"
+  },
+  "keywords": [
+    "json",
+    "sql",
+    "converter",
+    "cli",
+    "json-to-sql",
+    "database"
+  ],
+  "files": [
+    "cli.js"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "preferGlobal": true
+}
