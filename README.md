@@ -23,13 +23,18 @@ Or install directly from GitHub:
 
 ```bash
 pip install git+https://github.com/Coding-Dev-Tools/json2sql.git
-Or install via Homebrew (macOS/Linux):```bashbrew tap Coding-Dev-Tools/tapbrew install json2sql```Or install via Scoop (Windows):```bashscoop bucket add Coding-Dev-Tools https://github.com/Coding-Dev-Tools/scoop-bucketscoop install json2sql```
 ```
 
-Or install directly from GitHub:
-
+Or install via Homebrew (macOS/Linux):
 ```bash
-pip install git+https://github.com/Coding-Dev-Tools/json2sql.git
+brew tap Coding-Dev-Tools/tap
+brew install json2sql
+```
+
+Or install via Scoop (Windows):
+```bash
+scoop bucket add Coding-Dev-Tools https://github.com/Coding-Dev-Tools/scoop-bucket
+scoop install json2sql
 ```
 
 ## Quick Start
