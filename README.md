@@ -37,6 +37,12 @@ scoop bucket add Coding-Dev-Tools https://github.com/Coding-Dev-Tools/scoop-buck
 scoop install json2sql
 ```
 
+**npm (Node.js wrapper):**
+```bash
+npm install -g json2sql-cli
+```
+Then run: `json2sql --help`
+
 ## Quick Start
 
 ```bash
@@ -116,13 +122,3 @@ json2sql is one of eight tools in the Revenue Holdings suite. One license covers
 ## License
 
 MIT
-
-
-
-## Install via npm
-
-```bash
-npm install -g json2sql-cli
-```
-
-Then run: `json2sql --help`
