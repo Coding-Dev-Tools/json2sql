@@ -4,16 +4,22 @@
 
 Convert JSON files and datasets to SQL INSERT statements. Supports nested JSON, PostgreSQL, MySQL, and SQLite output dialects.
 
-[![PyPI](https://img.shields.io/pypi/v/json2sql)](https://pypi.org/project/json2sql/)
-[![Python](https://img.shields.io/pypi/pyversions/json2sql)](https://pypi.org/project/json2sql/)
-[![License](https://img.shields.io/pypi/l/json2sql)](https://github.com/Coding-Dev-Tools/json2sql/blob/main/LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/Coding-Dev-Tools/json2sql?label=latest)](https://github.com/Coding-Dev-Tools/json2sql/releases)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Coding-Dev-Tools/json2sql/blob/main/LICENSE)
 
 **Why json2sql?** Moving data from JSON into a database should be one command, not a script you maintain. json2sql takes JSON files â€” flat or nested â€” and produces correct SQL INSERT statements in your dialect of choice. Nested objects are automatically flattened into relational tables. Arrays become multiple INSERT rows. Type inference handles strings, numbers, booleans, and nulls without configuration. Pipe data from stdin, specify the table name, and get clean SQL out. Zero dependencies beyond Python 3.10+ and the CLI.
 
 ## Installation
 
 ```bash
-pip install json2sql
+pip install json2sql-cli
+```
+
+Or install directly from GitHub:
+
+```bash
+pip install git+https://github.com/Coding-Dev-Tools/json2sql.git
 ```
 
 Or install directly from GitHub:
