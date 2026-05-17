@@ -1,10 +1,8 @@
 """CLI interface for json2sql using Typer."""
 
 import sys
-from pathlib import Path
-from typing import Optional
-
 import typer
+from pathlib import Path
 
 try:
     from revenueholdings_license import require_license
@@ -23,12 +21,12 @@ app = typer.Typer(
 
 @app.command()
 def convert(
-    input_file: Optional[Path] = typer.Argument(
+    input_file: Path | None = typer.Argument(  # noqa: B008
         None,
         help="Path to JSON file. Reads from stdin if not provided.",
         exists=True,
     ),
-    dialect: Dialect = typer.Option(
+    dialect: Dialect = typer.Option(  # noqa: B008
         Dialect.POSTGRES,
         "--dialect",
         "-d",
@@ -40,7 +38,7 @@ def convert(
         "-t",
         help="Table name for INSERT statements.",
     ),
-    output: Optional[Path] = typer.Option(
+    output: Path | None = typer.Option(  # noqa: B008
         None,
         "--output",
         "-o",
@@ -79,7 +77,7 @@ def convert(
             result = converter.convert(json_text, table_name=table)
     except Exception as e:
         typer.echo(f"Error converting JSON: {e}", err=True)
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from e
 
     # Write output
     if output:

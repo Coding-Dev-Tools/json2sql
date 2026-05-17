@@ -41,7 +41,7 @@ def sql_type_for(value: Any, dialect: Dialect) -> str:
     if value is None:
         return _TYPE_MAP[dialect].get(str, "TEXT")
     py_type = type(value)
-    if py_type == bool:  # bool must be checked before int (bool is subclass of int)
+    if py_type is bool:  # bool must be checked before int (bool is subclass of int)
         return _TYPE_MAP[dialect][bool]
     return _TYPE_MAP[dialect].get(py_type, "TEXT")
 

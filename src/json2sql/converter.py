@@ -1,14 +1,12 @@
 """Core JSON-to-SQL conversion logic."""
 
 import json
-from typing import Any
 
 from .dialects import (
     Dialect,
     create_table_sql,
     format_value,
     insert_sql,
-    quote_identifier,
     sql_type_for,
 )
 
@@ -183,7 +181,7 @@ class JSONToSQLConverter:
         row: list[str],
     ) -> None:
         """Flatten a nested object into parent row with prefixed keys."""
-        for sub_key, sub_value in nested.items():
+        for _sub_key, sub_value in nested.items():
             row.append(format_value(sub_value, self.dialect))
 
     def _process_flatten(self, objects: list, table_name: str) -> None:
