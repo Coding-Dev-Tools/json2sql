@@ -1,3 +1,4 @@
+LICENSE
 README.md
 pyproject.toml
 src/json2sql/__init__.py

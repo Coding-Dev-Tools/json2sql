@@ -4,19 +4,29 @@ Version: 0.1.0
 Summary: Convert JSON files/datasets to SQL INSERT statements
 Author: Revenue Holdings
 License-Expression: MIT
-Project-URL: Homepage, https://github.com/Coding-Dev-Tools/json2sql
-Project-URL: Repository, https://github.com/Coding-Dev-Tools/json2sql
-Project-URL: Documentation, https://github.com/Coding-Dev-Tools/json2sql#readme
-Project-URL: Issue Tracker, https://github.com/Coding-Dev-Tools/json2sql/issues
+Keywords: json,sql,etl,data-conversion,cli
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Database
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
+License-File: LICENSE
 Requires-Dist: typer>=0.9.0
 Requires-Dist: rich>=13.0.0
+Provides-Extra: license
+Requires-Dist: revenueholdings-license>=0.1.0; extra == "license"
 Provides-Extra: dev
 Requires-Dist: pytest>=7.0; extra == "dev"
 Requires-Dist: pytest-cov; extra == "dev"
+Dynamic: license-file
 
 # json2sql
+
+[![GitHub stars](https://img.shields.io/github/stars/Coding-Dev-Tools/json2sql?style=social)](https://github.com/Coding-Dev-Tools/json2sql/stargazers)
 
 Convert JSON files and datasets to SQL INSERT statements. Supports nested JSON, PostgreSQL, MySQL, and SQLite output dialects.
 
@@ -30,6 +40,12 @@ Convert JSON files and datasets to SQL INSERT statements. Supports nested JSON, 
 
 ```bash
 pip install json2sql
+```
+
+Or install directly from GitHub:
+
+```bash
+pip install git+https://github.com/Coding-Dev-Tools/json2sql.git
 ```
 
 ## Quick Start
@@ -75,31 +91,32 @@ sqlite3 test.db < seed.sql
 
 ## Pricing
 
-One license covers all Revenue Holdings CLI tools. Pricing is per-seat.
+json2sql is one of eight tools in the Revenue Holdings suite. One license covers all CLI tools.
 
-| Tier | Price | Best For |
+| Plan | Price | Best For |
 |------|-------|----------|
-| **Open Source** | $0 | Individual devs, OSS projects — CLI only, limited rows |
-| **Pro** | **$29/mo** ($23 billed annually) | Professional devs — unlimited rows, batch processing |
-| **Team** | **$79/mo** ($63 billed annually) | Teams up to 5 — API access, CI/CD integration, priority support |
-| **Enterprise** | **$199/mo** (custom) | Organizations — compliance reports, RBAC, SSO, SLA |
+| **Free** | $0 | Individual devs, OSS — CLI only, limited rows |
+| **json2sql Individual** | **$9/mo** ($7 billed annually) | Professional devs — unlimited rows, batch processing |
+| **Suite (all 8 tools)** | **$49/mo** ($39 billed annually) | Full Revenue Holdings toolkit — 40% savings |
+| **Team** | **$79/mo** ($63 billed annually) | Up to 5 devs — API access, CI/CD integration, priority support |
+| **Enterprise** | Custom | SSO, RBAC, compliance reports, dedicated support |
 
-🔹 **No lock-in**: CLI works fully offline on the free tier — no telemetry, no phone-home.  
+🔹 **No lock-in**: CLI works fully offline on the free tier — no telemetry, no phone-home.
 🔹 **Annual billing**: Save 20%.
 
 ### Per-Tier Features
 
-| Feature | OSS | Pro | Team | Enterprise |
-|---------|:---:|:---:|:----:|:----------:|
-| CLI: convert, pipe | ✓ | ✓ | ✓ | ✓ |
-| Unlimited rows per conversion | — | ✓ | ✓ | ✓ |
-| Batch processing | — | ✓ | ✓ | ✓ |
-| Schema generation | — | ✓ | ✓ | ✓ |
-| API access | — | — | ✓ | ✓ |
-| Compliance reports | — | — | — | ✓ |
-| RBAC | — | — | — | ✓ |
-| SSO / SAML / OIDC | — | — | — | ✓ |
-| Priority support | Community | 24h | 8h | Dedicated |
+| Feature | Free | json2sql | Suite | Team | Enterprise |
+|---------|:----:|:--------:|:-----:|:----:|:----------:|
+| CLI: convert, pipe | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Unlimited rows per conversion | — | ✓ | ✓ | ✓ | ✓ |
+| Batch processing | — | ✓ | ✓ | ✓ | ✓ |
+| Schema generation | — | ✓ | ✓ | ✓ | ✓ |
+| API access | — | — | — | ✓ | ✓ |
+| Compliance reports | — | — | — | — | ✓ |
+| RBAC | — | — | — | — | ✓ |
+| SSO / SAML / OIDC | — | — | — | — | ✓ |
+| Priority support | Community | 24h | 24h | 8h | Dedicated |
 
 ---
 

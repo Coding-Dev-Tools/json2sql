@@ -1,4 +1,4 @@
-# json2sql
+﻿# json2sql
 
 [![GitHub stars](https://img.shields.io/github/stars/Coding-Dev-Tools/json2sql?style=social)](https://github.com/Coding-Dev-Tools/json2sql/stargazers)
 
@@ -8,7 +8,7 @@ Convert JSON files and datasets to SQL INSERT statements. Supports nested JSON, 
 [![Python](https://img.shields.io/pypi/pyversions/json2sql)](https://pypi.org/project/json2sql/)
 [![License](https://img.shields.io/pypi/l/json2sql)](https://github.com/Coding-Dev-Tools/json2sql/blob/main/LICENSE)
 
-**Why json2sql?** Moving data from JSON into a database should be one command, not a script you maintain. json2sql takes JSON files — flat or nested — and produces correct SQL INSERT statements in your dialect of choice. Nested objects are automatically flattened into relational tables. Arrays become multiple INSERT rows. Type inference handles strings, numbers, booleans, and nulls without configuration. Pipe data from stdin, specify the table name, and get clean SQL out. Zero dependencies beyond Python 3.10+ and the CLI.
+**Why json2sql?** Moving data from JSON into a database should be one command, not a script you maintain. json2sql takes JSON files â€” flat or nested â€” and produces correct SQL INSERT statements in your dialect of choice. Nested objects are automatically flattened into relational tables. Arrays become multiple INSERT rows. Type inference handles strings, numbers, booleans, and nulls without configuration. Pipe data from stdin, specify the table name, and get clean SQL out. Zero dependencies beyond Python 3.10+ and the CLI.
 
 ## Installation
 
@@ -25,7 +25,7 @@ pip install git+https://github.com/Coding-Dev-Tools/json2sql.git
 ## Quick Start
 
 ```bash
-# Basic usage — converts JSON to SQL INSERT statements
+# Basic usage â€” converts JSON to SQL INSERT statements
 json2sql convert data.json
 
 # Specify output dialect
@@ -69,35 +69,36 @@ json2sql is one of eight tools in the Revenue Holdings suite. One license covers
 
 | Plan | Price | Best For |
 |------|-------|----------|
-| **Free** | $0 | Individual devs, OSS — CLI only, limited rows |
-| **json2sql Individual** | **$9/mo** ($7 billed annually) | Professional devs — unlimited rows, batch processing |
-| **Suite (all 8 tools)** | **$49/mo** ($39 billed annually) | Full Revenue Holdings toolkit — 40% savings |
-| **Team** | **$79/mo** ($63 billed annually) | Up to 5 devs — API access, CI/CD integration, priority support |
+| **Free** | $0 | Individual devs, OSS â€” CLI only, limited rows |
+| **json2sql Individual** | **$9/mo** ($7 billed annually) | Professional devs â€” unlimited rows, batch processing |
+| **Suite (all 8 tools)** | **$49/mo** ($39 billed annually) | Full Revenue Holdings toolkit â€” 40% savings |
+| **Team** | **$79/mo** ($63 billed annually) | Up to 5 devs â€” API access, CI/CD integration, priority support |
 | **Enterprise** | Custom | SSO, RBAC, compliance reports, dedicated support |
 
-🔹 **No lock-in**: CLI works fully offline on the free tier — no telemetry, no phone-home.
-🔹 **Annual billing**: Save 20%.
+ðŸ”¹ **No lock-in**: CLI works fully offline on the free tier â€” no telemetry, no phone-home.
+ðŸ”¹ **Annual billing**: Save 20%.
 
 ### Per-Tier Features
 
 | Feature | Free | json2sql | Suite | Team | Enterprise |
 |---------|:----:|:--------:|:-----:|:----:|:----------:|
-| CLI: convert, pipe | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Unlimited rows per conversion | — | ✓ | ✓ | ✓ | ✓ |
-| Batch processing | — | ✓ | ✓ | ✓ | ✓ |
-| Schema generation | — | ✓ | ✓ | ✓ | ✓ |
-| API access | — | — | — | ✓ | ✓ |
-| Compliance reports | — | — | — | — | ✓ |
-| RBAC | — | — | — | — | ✓ |
-| SSO / SAML / OIDC | — | — | — | — | ✓ |
+| CLI: convert, pipe | âœ“ | âœ“ | âœ“ | âœ“ | âœ“ |
+| Unlimited rows per conversion | â€” | âœ“ | âœ“ | âœ“ | âœ“ |
+| Batch processing | â€” | âœ“ | âœ“ | âœ“ | âœ“ |
+| Schema generation | â€” | âœ“ | âœ“ | âœ“ | âœ“ |
+| API access | â€” | â€” | â€” | âœ“ | âœ“ |
+| Compliance reports | â€” | â€” | â€” | â€” | âœ“ |
+| RBAC | â€” | â€” | â€” | â€” | âœ“ |
+| SSO / SAML / OIDC | â€” | â€” | â€” | â€” | âœ“ |
 | Priority support | Community | 24h | 24h | 8h | Dedicated |
 
 ---
 
 <p align="center">
-  <sub>Part of <a href="https://coding-dev-tools.github.io/revenueholdings.dev/">Revenue Holdings</a> — CLI tools built by autonomous AI.</sub>
+  <sub>Part of <a href="https://coding-dev-tools.github.io/revenueholdings.dev/">Revenue Holdings</a> â€” CLI tools built by autonomous AI.</sub>
 </p>
 
 ## License
 
 MIT
+
