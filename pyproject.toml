@@ -14,16 +14,20 @@ authors = [{name = "Revenue Holdings"}]
 dependencies = [
     "typer>=0.9.0",
     "rich>=13.0.0",
-    "revenueholdings-license>=0.1.0",
+]
+keywords = ["json", "sql", "etl", "data-conversion", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Database",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 
-[project.urls]
-Homepage = "https://github.com/Coding-Dev-Tools/json2sql"
-Repository = "https://github.com/Coding-Dev-Tools/json2sql"
-Documentation = "https://github.com/Coding-Dev-Tools/json2sql#readme"
-"Issue Tracker" = "https://github.com/Coding-Dev-Tools/json2sql/issues"
-
 [project.optional-dependencies]
+license = ["revenueholdings-license>=0.1.0"]
 dev = ["pytest>=7.0", "pytest-cov"]
 
 [project.scripts]
