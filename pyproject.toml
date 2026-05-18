@@ -24,7 +24,15 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Coding-Dev-Tools/json2sql"
+Documentation = "https://coding-dev-tools.github.io/json2sql/"
+Repository = "https://github.com/Coding-Dev-Tools/json2sql"
+Issues = "https://github.com/Coding-Dev-Tools/json2sql/issues"
+Changelog = "https://github.com/Coding-Dev-Tools/json2sql/releases"
 
 [project.optional-dependencies]
 license = ["revenueholdings-license>=0.1.0"]
