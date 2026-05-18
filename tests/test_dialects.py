@@ -2,13 +2,12 @@
 import pytest
 from json2sql.dialects import (
     Dialect,
-    sql_type_for,
-    quote_identifier,
-    format_value,
     create_table_sql,
+    format_value,
     insert_sql,
+    quote_identifier,
+    sql_type_for,
 )
-
 
 # --- Dialect enum ---
 
