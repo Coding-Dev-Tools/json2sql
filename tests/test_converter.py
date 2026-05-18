@@ -158,3 +158,58 @@ class TestEdgeCases:
         result = converter_postgres.convert(data, table_name="users")
         assert "email" in result
         assert "age" in result
+
+    def test_unsupported_root_type_raises(self, converter_postgres):
+        """A plain string at root raises ValueError."""
+        with pytest.raises(ValueError, match="Unsupported JSON root type"):
+            converter_postgres.convert('"just a string"', table_name="bad")
+
+    def test_unsupported_root_number_raises(self, converter_postgres):
+        """A plain number at root raises ValueError."""
+        with pytest.raises(ValueError, match="Unsupported JSON root type"):
+            converter_postgres.convert("42", table_name="bad")
+
+    def test_unsupported_root_bool_raises(self, converter_postgres):
+        """A plain boolean at root raises ValueError."""
+        with pytest.raises(ValueError, match="Unsupported JSON root type"):
+            converter_postgres.convert("true", table_name="bad")
+
+
+class TestGenerateSchema:
+    """Tests for generate_schema method."""
+
+    def test_generate_schema_basic(self, converter_postgres):
+        data = json.dumps([{"name": "Alice", "age": 30}])
+        result = converter_postgres.generate_schema(data, table_name="users")
+        assert "CREATE TABLE" in result
+        assert "INSERT INTO" not in result
+
+    def test_generate_schema_single_object(self, converter_postgres):
+        """Single dict at root also works."""
+        data = json.dumps({"name": "Alice"})
+        result = converter_postgres.generate_schema(data, table_name="users")
+        assert "CREATE TABLE" in result
+        assert '"name"' in result
+
+    def test_generate_schema_with_flatten_nested_array(self):
+        """generate_schema with flatten=True should produce CREATE TABLE for nested arrays."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({
+            "id": 1,
+            "name": "Alice",
+            "orders": [
+                {"product": "Widget", "qty": 3},
+                {"product": "Gadget", "qty": 1},
+            ],
+        })
+        result = conv.generate_schema(data, table_name="users")
+        assert "CREATE TABLE" in result
+        # Should include the nested table schema
+        assert "users_orders" in result or "orders" in result
+        assert "INSERT INTO" not in result
+
+    def test_generate_schema_primitives(self, converter_postgres):
+        """A primitive type should produce a simple schema."""
+        data = json.dumps([1, 2, 3])
+        result = converter_postgres.generate_schema(data, table_name="nums")
+        assert "CREATE TABLE" in result
