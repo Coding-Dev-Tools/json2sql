@@ -129,8 +129,58 @@ class TestSchemaOnly:
         assert "CREATE TABLE" in result
         assert "INSERT INTO" not in result
 
+    def test_generate_schema_single_object(self, converter_postgres):
+        """Single dict root generates schema correctly."""
+        data = json.dumps({"name": "Alice", "age": 30})
+        result = converter_postgres.generate_schema(data, table_name="users")
+        assert "CREATE TABLE" in result
+        assert "name" in result
+        assert "age" in result
+        assert "INSERT INTO" not in result
+
+    def test_generate_schema_primitive(self, converter_postgres):
+        """Primitive root type falls back to 'value' column."""
+        data = json.dumps("hello")
+        result = converter_postgres.generate_schema(data, table_name="single")
+        assert "CREATE TABLE" in result
+        assert "value" in result
+
+    def test_generate_schema_with_flatten(self):
+        """Schema generation with flatten=True and nested arrays."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({
+            "id": 1,
+            "orders": [
+                {"product": "Widget", "qty": 3},
+            ],
+        })
+        result = conv.generate_schema(data, table_name="users")
+        assert "CREATE TABLE" in result
+        # Should create a separate table for nested array
+        assert "users_orders" in result or "orders" in result
+        assert "INSERT INTO" not in result
+
 
 # --- Edge cases ---
+
+class TestUnsupportedRootTypes:
+    """Tests for behavior with unsupported root JSON types."""
+
+    def test_convert_string_root_raises(self, converter_postgres):
+        """A plain string as JSON root raises ValueError."""
+        with pytest.raises(ValueError, match="Unsupported JSON root type"):
+            converter_postgres.convert(json.dumps("just a string"), table_name="t")
+
+    def test_convert_number_root_raises(self, converter_postgres):
+        """A plain number as JSON root raises ValueError."""
+        with pytest.raises(ValueError, match="Unsupported JSON root type"):
+            converter_postgres.convert(json.dumps(42), table_name="t")
+
+    def test_convert_boolean_root_raises(self, converter_postgres):
+        """A plain boolean as JSON root raises ValueError."""
+        with pytest.raises(ValueError, match="Unsupported JSON root type"):
+            converter_postgres.convert(json.dumps(True), table_name="t")
+
 
 class TestEdgeCases:
     def test_string_with_quotes(self, converter_postgres):
