@@ -1,18 +1,24 @@
 # json2sql
 
 [![GitHub stars](https://img.shields.io/github/stars/Coding-Dev-Tools/json2sql?style=social)](https://github.com/Coding-Dev-Tools/json2sql/stargazers)
-[![Awesome DevOps](https://img.shields.io/badge/Awesome_DevOps-Submitted-grey?logo=github)](https://github.com/wmariuss/awesome-devops)<!-- PR #433 -->
 
 Convert JSON files and datasets to SQL INSERT statements. Supports nested JSON, PostgreSQL, MySQL, and SQLite output dialects.
+
+> ⭐ **Star this repo** if you work with JSON data — it helps other devs discover json2sql!
 
 [![GitHub release](https://img.shields.io/github/v/release/Coding-Dev-Tools/json2sql?label=latest)](https://github.com/Coding-Dev-Tools/json2sql/releases)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Coding-Dev-Tools/json2sql/blob/main/LICENSE)
 [![Open Source Alternative](https://img.shields.io/badge/Open_Source_Alternative-%E2%87%92-blue?logo=opensourceinitiative)](https://www.opensourcealternative.to/project/json2sql)
 [![LibHunt](https://img.shields.io/badge/LibHunt-%E2%87%92-blue?logo=codeigniter)](https://www.libhunt.com/r/Coding-Dev-Tools/json2sql)
-[![Awesome Python](https://img.shields.io/badge/Awesome_Python-%E2%87%92-blue?logo=python)](https://github.com/uhub/awesome-python)
 
-**Why json2sql?** Moving data from JSON into a database should be one command, not a script you maintain. json2sql takes JSON files — flat or nested — and produces correct SQL INSERT statements in your dialect of choice. Nested objects are automatically flattened into relational tables. Arrays become multiple INSERT rows. Type inference handles strings, numbers, booleans, and nulls without configuration. Pipe data from stdin, specify the table name, and get clean SQL out. Zero dependencies beyond Python 3.10+ and the CLI.
+**Why json2sql?** Every developer hits this: you need to load JSON data into a database, but you don't want to write a custom ETL script. Manually writing INSERT statements for hundreds of rows is error-prone. json2sql handles nested JSON, auto-infers types, and generates clean SQL in one command — no Python scripts, no ORM config, no boilerplate.
+
+Real-world scenarios:
+- **Seeding test databases**: Convert API response fixtures into seed data for integration tests
+- **Data migrations**: Transform JSON exports from one system into INSERT statements for a new database
+- **CI/CD pipelines**: Generate SQL from JSON configs as part of automated deployment
+- **Analytics imports**: Convert event JSON payloads into structured SQL tables for querying
 
 ## Installation
 
