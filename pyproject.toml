@@ -28,7 +28,9 @@ classifiers = [
 
 [project.optional-dependencies]
 license = ["revenueholdings-license>=0.1.0"]
-dev = ["pytest>=7.0", "pytest-cov"]
+dev = ["pytest>=7.0", "pytest-cov"
+    "ruff>=0.4.0",
+]
 
 [project.scripts]
 json2sql = "json2sql.cli:app"
