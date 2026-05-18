@@ -87,13 +87,13 @@ sqlite3 test.db < seed.sql
 
 ## Pricing
 
-json2sql is one of eight tools in the DevForge suite. One license covers all CLI tools.
+json2sql is one of eleven CLI tools in the Revenue Holdings suite. One license covers all CLI tools.
 
 | Plan | Price | Best For |
 |------|-------|----------|
 | **Free** | $0 | Individual devs, OSS — CLI only, limited rows |
 | **json2sql Individual** | **$9/mo** ($7 billed annually) | Professional devs — unlimited rows, batch processing |
-| **Suite (all 8 tools)** | **$49/mo** ($39 billed annually) | Full DevForge toolkit — 40% savings |
+| **Suite (all 11 CLI tools)** | **$49/mo** ($39 billed annually) | Full Revenue Holdings toolkit — 40% savings |
 | **Team** | **$79/mo** ($63 billed annually) | Up to 5 devs — API access, CI/CD integration, priority support |
 | **Enterprise** | Custom | SSO, RBAC, compliance reports, dedicated support |
 
@@ -117,7 +117,7 @@ json2sql is one of eight tools in the DevForge suite. One license covers all CLI
 ---
 
 <p align="center">
-  <sub>Part of <a href="https://coding-dev-tools.github.io/devforge.dev/">DevForge</a> — CLI tools built by autonomous AI.</sub>
+  <sub>Part of <a href="https://coding-dev-tools.github.io/revenueholdings.dev/">Revenue Holdings</a> — CLI tools built by autonomous AI.</sub>
 </p>
 
 ## License
