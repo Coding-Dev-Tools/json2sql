@@ -4,11 +4,6 @@ import sys
 import typer
 from pathlib import Path
 
-try:
-    from revenueholdings_license import require_license
-except ImportError:
-    require_license = None
-
 from .converter import JSONToSQLConverter
 from .dialects import Dialect
 
@@ -57,8 +52,6 @@ def convert(
     ),
 ):
     """Convert a JSON file to SQL INSERT statements."""
-    if require_license:
-        require_license("json2sql")
     # Read input
     if input_file:
         json_text = input_file.read_text(encoding="utf-8")
@@ -94,8 +87,6 @@ def mcp():
     AI coding agents (Claude Code, Cursor, etc.) use this to interact
     with json2sql tools directly.
     """
-    if require_license:
-        require_license("json2sql")
     from click_to_mcp import run
     run(app)
 
@@ -103,8 +94,6 @@ def mcp():
 @app.command()
 def version():
     """Show version."""
-    if require_license:
-        require_license("json2sql")
     from . import __version__
     typer.echo(f"json2sql {__version__}")
 
