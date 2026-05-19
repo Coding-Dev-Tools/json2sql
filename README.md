@@ -10,7 +10,6 @@ Convert JSON files and datasets to SQL INSERT statements. Supports nested JSON, 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Coding-Dev-Tools/json2sql/blob/main/LICENSE)
 [![Open Source Alternative](https://img.shields.io/badge/Open_Source_Alternative-%E2%87%92-blue?logo=opensourceinitiative)](https://www.opensourcealternative.to/project/json2sql)
-[![LibHunt](https://img.shields.io/badge/LibHunt-%E2%87%92-blue?logo=codeigniter)](https://www.libhunt.com/r/Coding-Dev-Tools/json2sql)
 
 **Why json2sql?** Every developer hits this: you need to load JSON data into a database, but you don't want to write a custom ETL script. Manually writing INSERT statements for hundreds of rows is error-prone. json2sql handles nested JSON, auto-infers types, and generates clean SQL in one command — no Python scripts, no ORM config, no boilerplate.
 
