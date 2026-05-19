@@ -1,4 +1,5 @@
 """Standalone tests for json2sql dialects module."""
+import pytest
 from json2sql.dialects import (
     Dialect,
     sql_type_for,
@@ -7,7 +8,6 @@ from json2sql.dialects import (
     create_table_sql,
     insert_sql,
 )
-import pytest
 
 
 # --- Dialect enum ---
