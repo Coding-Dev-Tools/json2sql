@@ -1,5 +1,6 @@
 """Standalone tests for json2sql dialects module."""
 import pytest
+
 from json2sql.dialects import (
     Dialect,
     sql_type_for,
