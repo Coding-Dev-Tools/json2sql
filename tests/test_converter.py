@@ -285,6 +285,68 @@ class TestEdgeCases:
             converter_postgres.convert("true", table_name="bad")
 
 
+class TestFlattenRowValueAlignment:
+    """Regression tests: parent row values must match parent column count."""
+
+    def test_flatten_nested_array_no_fk_parent_row(self):
+        """Parent with nested array but no FK field: parent row must have one value per column."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({
+            "color": "red",
+            "sizes": [{"label": "M"}, {"label": "L"}],
+        })
+        result = conv.convert(data, table_name="items")
+        # Parent table should have only 'color' column
+        assert '"color"' in result
+        # INSERT VALUES must have exactly one value (no stray NULL)
+        import re
+        parent_insert = re.search(
+            r'INSERT INTO "items"[^;]+;', result, re.DOTALL
+        )
+        assert parent_insert, "Parent INSERT not found"
+        values_match = re.search(r'VALUES\s*\(([^)]+)\)', parent_insert.group())
+        assert values_match, "VALUES not found in parent INSERT"
+        values = [v.strip() for v in values_match.group(1).split(",")]
+        assert len(values) == 1, f"Expected 1 value, got {len(values)}: {values}"
+        assert values[0] == "'red'"
+
+    def test_flatten_nested_array_with_fk_parent_row(self):
+        """Parent with id + nested array: parent row must have one value per column."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({
+            "id": 1,
+            "colors": [{"name": "red"}, {"name": "blue"}],
+        })
+        result = conv.convert(data, table_name="items")
+        import re
+        parent_insert = re.search(
+            r'INSERT INTO "items"[^;]+;', result, re.DOTALL
+        )
+        assert parent_insert, "Parent INSERT not found"
+        values_match = re.search(r'VALUES\s*\(([^)]+)\)', parent_insert.group())
+        assert values_match, "VALUES not found in parent INSERT"
+        values = [v.strip() for v in values_match.group(1).split(",")]
+        assert len(values) == 1, f"Expected 1 value, got {len(values)}: {values}"
+        assert values[0] == "1"
+
+    def test_flatten_nested_array_child_has_fk(self):
+        """Child table should have FK column when parent has a reference field."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({
+            "id": 1,
+            "items": [{"product": "Widget"}, {"product": "Gadget"}],
+        })
+        result = conv.convert(data, table_name="orders")
+        assert '"orders_id"' in result, "Child table should have FK column orders_id"
+        # Child rows should have 2 values: FK + product
+        import re
+        child_insert = re.search(
+            r'INSERT INTO "orders_items"[^;]+;', result, re.DOTALL
+        )
+        assert child_insert, "Child INSERT not found"
+        assert "1" in child_insert.group()
+
+
 class TestGenerateSchema:
     """Tests for generate_schema method."""
 
