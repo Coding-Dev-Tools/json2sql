@@ -150,7 +150,7 @@ class TestFlattenDetail:
         data = json.dumps({"id": 1, "address": {"city": "NYC", "zip": "10001"}})
         result = conv.convert(data, table_name="users")
         # Extract the VALUES line
-        insert_lines = [l.strip() for l in result.split("\n") if "VALUES" in l]
+        insert_lines = [line.strip() for line in result.split("\n") if "VALUES" in line]
         assert len(insert_lines) == 1
         # Values should be (1, 'NYC', '10001')
         assert "1" in insert_lines[0]
