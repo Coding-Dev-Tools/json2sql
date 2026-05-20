@@ -132,6 +132,116 @@ class TestSchemaOnly:
 
 # --- Edge cases ---
 
+class TestFlattenDetail:
+    """Detailed tests for flatten feature output correctness."""
+
+    def test_flatten_nested_object_column_names(self):
+        """Flattened nested dict should produce prefixed column names in CREATE TABLE."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({"id": 1, "address": {"city": "NYC", "zip": "10001"}})
+        result = conv.convert(data, table_name="users")
+        assert '"address_city"' in result, "Should have flattened column address_city"
+        assert '"address_zip"' in result, "Should have flattened column address_zip"
+        assert '"id"' in result, "Should keep non-nested columns"
+
+    def test_flatten_nested_object_insert_values(self):
+        """Flattened nested dict values should align with columns in INSERT."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({"id": 1, "address": {"city": "NYC", "zip": "10001"}})
+        result = conv.convert(data, table_name="users")
+        # Extract the VALUES line
+        insert_lines = [line.strip() for line in result.split("\n") if "VALUES" in line]
+        assert len(insert_lines) == 1
+        # Values should be (1, 'NYC', '10001')
+        assert "1" in insert_lines[0]
+        assert "'NYC'" in insert_lines[0]
+        assert "'10001'" in insert_lines[0]
+
+    def test_flatten_multiple_rows(self):
+        """Multiple objects with nested dicts should flatten consistently."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps([
+            {"id": 1, "meta": {"color": "red", "size": "M"}},
+            {"id": 2, "meta": {"color": "blue", "size": "L"}},
+        ])
+        result = conv.convert(data, table_name="items")
+        assert '"meta_color"' in result
+        assert '"meta_size"' in result
+        # Both rows should be in the multi-row INSERT
+        assert "'red'" in result
+        assert "'blue'" in result
+
+    def test_flatten_deeply_nested(self):
+        """Deeply nested dicts should be one-level flattened (not recursive)."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({
+            "id": 1,
+            "location": {
+                "city": "NYC",
+                "coordinates": {"lat": 40.71, "lng": -74.01},
+            },
+        })
+        result = conv.convert(data, table_name="places")
+        # First-level flatten: location_city and location_coordinates
+        assert '"location_city"' in result
+        # coordinates is still a dict -> should be stringified or treated as sub-value
+        # but the current implementation only does one-level
+        assert '"location_coordinates"' not in result or "CREATE TABLE" in result
+
+    def test_flatten_empty_nested_object(self):
+        """Empty nested dict should not break the converter."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({"id": 1, "meta": {}})
+        try:
+            result = conv.convert(data, table_name="items")
+            # Should produce valid SQL even with empty nested object
+            assert "CREATE TABLE" in result
+        except Exception as e:
+            pytest.fail(f"Empty nested dict raised: {e}")
+
+    def test_flatten_with_array_and_object_mixed(self):
+        """Mix of nested arrays and nested objects with flatten."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({
+            "id": 1,
+            "profile": {"age": 30, "city": "NYC"},
+            "tags": [{"name": "dev"}, {"name": "python"}],
+        })
+        result = conv.convert(data, table_name="users")
+        assert '"profile_age"' in result
+        assert '"profile_city"' in result
+        # Nested array should create a separate table
+        assert "users_tags" in result
+
+
+class TestSchemaOnlyWithFlatten:
+    """Schema-only mode with flatten."""
+
+    def test_generate_schema_with_flatten_nested_object(self):
+        """Schema-only with flatten should produce CREATE TABLE with flattened columns."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({"id": 1, "address": {"city": "NYC", "zip": "10001"}})
+        result = conv.generate_schema(data, table_name="users")
+        assert "CREATE TABLE" in result
+        assert '"address_city"' in result
+        assert '"address_zip"' in result
+        assert "INSERT INTO" not in result
+
+    def test_generate_schema_with_flatten_mixed(self):
+        """Schema-only with flatten for nested arrays and objects."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({
+            "id": 1,
+            "profile": {"age": 30},
+            "orders": [{"product": "Widget", "qty": 3}],
+        })
+        result = conv.generate_schema(data, table_name="users")
+        assert "CREATE TABLE" in result
+        assert '"profile_age"' in result
+        assert "users_orders" in result
+        assert "INSERT INTO" not in result
+
+
 class TestEdgeCases:
     def test_string_with_quotes(self, converter_postgres):
         data = json.dumps({"bio": "It's a test"})

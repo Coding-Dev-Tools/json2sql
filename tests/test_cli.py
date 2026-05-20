@@ -74,12 +74,48 @@ class TestCLIBasic:
         assert result.exit_code == 0
         assert "CREATE TABLE" in result.stdout
 
+    def test_convert_with_flatten_verbose_output(self, tmp_path):
+        """Flatten nested object should produce prefixed column names."""
+        data = {"id": 1, "address": {"city": "NYC", "zip": "10001"}}
+        json_file = tmp_path / "nested.json"
+        json_file.write_text(json.dumps(data))
+
+        result = runner.invoke(app, ["convert", str(json_file), "--flatten"])
+        assert result.exit_code == 0
+        assert "address_city" in result.stdout
+        assert "address_zip" in result.stdout
+
+    def test_convert_flatten_mixed_nested(self, tmp_path):
+        """Flatten with both nested dicts and arrays via CLI."""
+        data = {
+            "id": 1,
+            "profile": {"age": 30},
+            "tags": [{"name": "dev"}, {"name": "python"}],
+        }
+        json_file = tmp_path / "complex.json"
+        json_file.write_text(json.dumps(data))
+
+        result = runner.invoke(app, ["convert", str(json_file), "--flatten"])
+        assert result.exit_code == 0
+        assert "profile_age" in result.stdout
+
     def test_convert_schema_only(self, tmp_path):
         """Generate schema-only output (no INSERT)."""
         json_file = tmp_path / "data.json"
         json_file.write_text(json.dumps([{"name": "Alice", "age": 30}]))
 
         result = runner.invoke(app, ["convert", str(json_file), "--schema-only"])
+        assert result.exit_code == 0
+        assert "CREATE TABLE" in result.stdout
+        assert "INSERT INTO" not in result.stdout
+
+    def test_convert_schema_only_with_flatten(self, tmp_path):
+        """Schema-only with flatten should still exclude INSERT."""
+        data = {"id": 1, "address": {"city": "NYC"}, "orders": [{"product": "Widget"}]}
+        json_file = tmp_path / "nested.json"
+        json_file.write_text(json.dumps(data))
+
+        result = runner.invoke(app, ["convert", str(json_file), "--schema-only", "--flatten"])
         assert result.exit_code == 0
         assert "CREATE TABLE" in result.stdout
         assert "INSERT INTO" not in result.stdout
@@ -129,6 +165,15 @@ class TestCLIVersion:
         result = runner.invoke(app, ["version"])
         assert result.exit_code == 0
         assert "0.1.0" in result.stdout
+
+    def test_version_output_format(self):
+        """Version output should include the tool name."""
+        result = runner.invoke(app, ["version"])
+        assert result.exit_code == 0
+        assert "json2sql" in result.stdout
+        assert "0.1.0" in result.stdout
+        # Should contain version number but not error messages
+        assert "Error" not in result.stdout
 
 
 class TestCLIErrorHandling:

@@ -53,16 +53,24 @@ class JSONToSQLConverter:
         self._extra_tables = []
 
         if isinstance(data, list) and data and isinstance(data[0], dict):
-            columns = self._infer_columns(data)
+            objects = data
         elif isinstance(data, dict):
-            columns = self._infer_columns([data])
+            objects = [data]
+        else:
+            objects = []
+
+        if objects:
+            if self.flatten:
+                columns = self._infer_columns_flattened(objects, table_name)
+            else:
+                columns = self._infer_columns(objects)
         else:
             columns = {"value": "TEXT"}
 
         statements = [create_table_sql(table_name, columns, self.dialect)]
 
         # Process extra tables from flattening
-        self._process_flatten(data if isinstance(data, list) else [data], table_name)
+        self._process_flatten(objects, table_name)
         for name, cols, _ in self._extra_tables:
             statements.append(create_table_sql(name, cols, self.dialect))
 
