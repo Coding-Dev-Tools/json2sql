@@ -132,6 +132,63 @@ class TestSchemaOnly:
 
 # --- Edge cases ---
 
+class TestFlattenRegression:
+    """Regression tests for flatten bugs."""
+
+    def test_flatten_nested_array_column_value_count(self):
+        """
+        Regression: flatten with nested array should have matching
+        column count and value count in INSERT statements.
+        Previously the FK placeholder 'NULL' was appended to the parent
+        row but removed from columns, causing a mismatch.
+        """
+        import re
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({
+            "id": 1,
+            "name": "Alice",
+            "orders": [
+                {"product": "Widget", "qty": 3},
+            ],
+        })
+        result = conv.convert(data, table_name="users")
+        # Parse the INSERT for the parent table
+        for block in result.split("\n\n"):
+            if 'INSERT INTO' in block and '"users"' in block:
+                cols = re.search(r'\(([^)]+)\)\s*VALUES', block)
+                vals = re.search(r'VALUES\s*\(([^)]+)\)', block)
+                if cols and vals:
+                    c_count = len([c for c in cols.group(1).split(",") if c.strip()])
+                    v_count = len([v for v in vals.group(1).split(",") if v.strip()])
+                    assert c_count == v_count, (
+                        f"Column count ({c_count}) != value count ({v_count})"
+                    )
+
+    def test_flatten_mixed_nested_array_and_object_count(self):
+        """
+        Regression: mixed nested dicts and arrays in flatten mode
+        should produce column-value count match.
+        """
+        import re
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({
+            "id": 1,
+            "profile": {"age": 30, "city": "NYC"},
+            "tags": [{"name": "dev"}],
+        })
+        result = conv.convert(data, table_name="users")
+        for block in result.split("\n\n"):
+            if 'INSERT INTO' in block and '"users"' in block:
+                cols = re.search(r'\(([^)]+)\)\s*VALUES', block)
+                vals = re.search(r'VALUES\s*\(([^)]+)\)', block)
+                if cols and vals:
+                    c_count = len([c for c in cols.group(1).split(",") if c.strip()])
+                    v_count = len([v for v in vals.group(1).split(",") if v.strip()])
+                    assert c_count == v_count, (
+                        f"Column count ({c_count}) != value count ({v_count})"
+                    )
+
+
 class TestFlattenDetail:
     """Detailed tests for flatten feature output correctness."""
 

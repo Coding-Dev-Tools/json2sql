@@ -88,7 +88,7 @@ class JSONToSQLConverter:
                 if self.flatten and isinstance(value, list) and value and isinstance(value[0], dict):
                     # Nested array of objects -> separate table
                     self._flatten_nested(table_name, col_name, value, obj)
-                    row.append("NULL")  # FK placeholder
+                    continue  # skip column — extracted to child table
                 elif self.flatten and isinstance(value, dict):
                     # Nested object -> flatten into parent with prefixed keys
                     self._flatten_object(table_name, col_name, value, obj, row)
