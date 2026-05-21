@@ -164,16 +164,51 @@ class TestCLIVersion:
         """Show version."""
         result = runner.invoke(app, ["version"])
         assert result.exit_code == 0
-        assert "0.1.0" in result.stdout
+        assert "0.1.1" in result.stdout
 
     def test_version_output_format(self):
         """Version output should include the tool name."""
         result = runner.invoke(app, ["version"])
         assert result.exit_code == 0
         assert "json2sql" in result.stdout
-        assert "0.1.0" in result.stdout
+        assert "0.1.1" in result.stdout
         # Should contain version number but not error messages
         assert "Error" not in result.stdout
+
+
+class TestMCP:
+    """MCP command tests."""
+
+    def test_mcp_import_error_handled_gracefully(self):
+        """Missing click_to_mcp shows a helpful error instead of traceback."""
+        import builtins
+        import sys
+        import unittest.mock as mock
+        # Remove click_to_mcp from cache so the import statement is executed
+        old_mod = sys.modules.pop("click_to_mcp", None)
+
+        original_import = builtins.__import__
+
+        def mock_import(name, *args, **kwargs):
+            if name == "click_to_mcp":
+                raise ImportError(f"No module named '{name}'")
+            return original_import(name, *args, **kwargs)
+
+        try:
+            with mock.patch.object(builtins, "__import__", side_effect=mock_import):
+                result = runner.invoke(app, ["mcp"])
+                assert result.exit_code == 1
+                assert "click_to_mcp" in result.output.lower()
+                assert "pip install" in result.output.lower()
+        finally:
+            if old_mod:
+                sys.modules["click_to_mcp"] = old_mod
+
+    def test_mcp_command_exists(self):
+        """mcp command is registered and responds to --help."""
+        result = runner.invoke(app, ["mcp", "--help"])
+        assert result.exit_code == 0
+        assert "MCP" in result.stdout or "Model Context" in result.stdout or "stdio" in result.stdout
 
 
 class TestCLIErrorHandling:

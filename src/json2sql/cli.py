@@ -87,7 +87,15 @@ def mcp():
     AI coding agents (Claude Code, Cursor, etc.) use this to interact
     with json2sql tools directly.
     """
-    from click_to_mcp import run
+    try:
+        from click_to_mcp import run  # type: ignore[import-untyped]
+    except ImportError:
+        typer.echo(
+            "Error: click_to_mcp is required for MCP mode. "
+            "Install it with: pip install click-to-mcp",
+            err=True,
+        )
+        raise typer.Exit(code=1) from None
     run(app)
 
 
