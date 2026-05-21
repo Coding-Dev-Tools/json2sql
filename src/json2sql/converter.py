@@ -194,7 +194,7 @@ class JSONToSQLConverter:
 
     def _process_flatten(self, objects: list, table_name: str) -> None:
         """Process flattening for schema generation."""
-        if not self.flatten:
+        if not self.flatten or not objects:
             return
         for obj in objects if isinstance(objects[0], dict) else []:
             for key, value in obj.items():

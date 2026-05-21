@@ -323,3 +323,11 @@ class TestGenerateSchema:
         data = json.dumps([1, 2, 3])
         result = converter_postgres.generate_schema(data, table_name="nums")
         assert "CREATE TABLE" in result
+
+    def test_generate_schema_primitives_with_flatten(self, converter_postgres):
+        """Primitive array with flatten and schema-only should not crash."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps([1, 2, 3])
+        result = conv.generate_schema(data, table_name="nums")
+        assert "CREATE TABLE" in result
+        assert "INSERT INTO" not in result
