@@ -7,6 +7,10 @@ All notable changes to json2sql will be documented in this file.
 ### Added
 
 - CLI integration tests with comprehensive coverage (#8, #9, #10)
+
+### Changed
+
+- Python package version synced to 0.1.1 (matches npm package version)
 - Standalone dialect tests and converter edge cases (#10)
 - npm wrapper (`package.json` + `cli.js`) for npm publishing
 - GitHub Actions: PyPI publish workflow (release or manual dispatch)
