@@ -444,3 +444,35 @@ class TestGenerateSchema:
         data = json.dumps([1, 2, 3])
         result = converter_postgres.generate_schema(data, table_name="nums")
         assert "CREATE TABLE" in result
+
+    def test_generate_schema_primitives_with_flatten_no_crash(self):
+        """generate_schema with flatten=True on primitive array must not crash.
+
+        Regression: _process_flatten accessed objects[0] without checking
+        if the list was empty, causing IndexError on primitive arrays.
+        """
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps([1, 2, 3])
+        result = conv.generate_schema(data, table_name="nums")
+        assert "CREATE TABLE" in result
+        assert "INSERT INTO" not in result
+
+    def test_generate_schema_empty_array_with_flatten_no_crash(self):
+        """generate_schema with flatten=True on empty array must not crash."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps([])
+        result = conv.generate_schema(data, table_name="empty")
+        assert "CREATE TABLE" in result
+
+    def test_version_in_init_matches_pyproject(self):
+        """pyproject.toml version must match __init__.__version__."""
+        import tomllib
+        from json2sql import __version__
+        from pathlib import Path
+        pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
+        with open(pyproject, "rb") as f:
+            data = tomllib.load(f)
+        assert data["project"]["version"] == __version__, (
+            f"pyproject.toml version ({data['project']['version']}) != "
+            f"__init__.__version__ ({__version__})"
+        )

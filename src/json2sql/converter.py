@@ -212,7 +212,9 @@ class JSONToSQLConverter:
         """Process flattening for schema generation."""
         if not self.flatten:
             return
-        for obj in objects if isinstance(objects[0], dict) else []:
+        if not objects or not isinstance(objects[0], dict):
+            return
+        for obj in objects:
             for key, value in obj.items():
                 if isinstance(value, list) and value and isinstance(value[0], dict):
                     self._flatten_nested(table_name, key, value, obj)
