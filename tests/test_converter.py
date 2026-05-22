@@ -299,6 +299,70 @@ class TestSchemaOnlyWithFlatten:
         assert "INSERT INTO" not in result
 
 
+class TestFlattenMissingSubKeysNullPadding:
+    """Regression: objects with different nested sub-keys across rows."""
+
+    def test_flatten_missing_sub_key_gets_null(self):
+        """When one object's nested dict is missing a sub-key present in others,
+        the missing sub-key should get NULL in the INSERT row."""
+        import re
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps([
+            {"id": 1, "meta": {"city": "NYC"}},
+            {"id": 2, "meta": {"city": "LA", "state": "CA"}},
+        ])
+        result = conv.convert(data, table_name="users")
+        # The INSERT should have matching column/value counts per row
+        for block in result.split("\n\n"):
+            if 'INSERT INTO' in block and '"users"' in block:
+                cols = re.search(r'\(([^)]+)\)\s*VALUES', block)
+                vals = re.search(r'VALUES\s*(.+)', block, re.DOTALL)
+                if cols and vals:
+                    c_count = len([c for c in cols.group(1).split(",") if c.strip()])
+                    # Count value groups (rows)
+                    row_matches = re.findall(r'\(([^)]+)\)', vals.group(1))
+                    for row_str in row_matches:
+                        v_count = len([v for v in row_str.split(",") if v.strip()])
+                        assert v_count == c_count, (
+                            f"Column count ({c_count}) != value count ({v_count}) in row ({row_str})"
+                        )
+        # The first row should have NULL for meta_state
+        assert "NULL" in result
+
+    def test_flatten_nested_dict_all_keys_present(self):
+        """When all objects have the same nested sub-keys, no NULL padding needed."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps([
+            {"id": 1, "meta": {"city": "NYC", "state": "NY"}},
+            {"id": 2, "meta": {"city": "LA", "state": "CA"}},
+        ])
+        result = conv.convert(data, table_name="users")
+        assert '"meta_city"' in result
+        assert '"meta_state"' in result
+        assert "'NYC'" in result
+        assert "'LA'" in result
+
+
+class TestFlattenNestedFKNotShadowed:
+    """Regression: nested object with key matching parent FK name."""
+
+    def test_nested_object_key_not_shadowed_by_fk(self):
+        """A nested object's own key that matches the parent FK column name
+        should NOT be silently replaced by the parent's FK value."""
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps({
+            "id": 1,
+            "name": "Alice",
+            "orders": [
+                {"users_id": 999, "product": "Widget", "qty": 3},
+            ],
+        })
+        result = conv.convert(data, table_name="users")
+        # The child table should preserve the nested object's users_id value (999)
+        # rather than silently replacing it with the parent's id (1)
+        assert "'999'" in result or "999" in result
+
+
 class TestEdgeCases:
     def test_string_with_quotes(self, converter_postgres):
         data = json.dumps({"bio": "It's a test"})
