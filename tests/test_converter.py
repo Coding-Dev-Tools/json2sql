@@ -342,6 +342,24 @@ class TestEdgeCases:
             converter_postgres.convert("true", table_name="bad")
 
 
+class TestVersionSync:
+    """Version in pyproject.toml must match __init__.__version__."""
+
+    def test_version_matches_pyproject(self):
+        """Runtime version should match the declared package version."""
+        import tomllib
+        from json2sql import __version__
+        from pathlib import Path
+
+        pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
+        with open(pyproject, "rb") as f:
+            data = tomllib.load(f)
+        declared = data["project"]["version"]
+        assert __version__ == declared, (
+            f"Version mismatch: __init__.py={__version__}, pyproject.toml={declared}"
+        )
+
+
 class TestGenerateSchema:
     """Tests for generate_schema method."""
 
