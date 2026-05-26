@@ -44,12 +44,15 @@ dev = [
 [project.scripts]
 json2sql = "json2sql.cli:app"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
-
 [tool.setuptools.package-data]
-"*" = ["py.typed"]
+json2sql = ["py.typed"]
+
 [tool.ruff]
 target-version = "py310"
 line-length = 120
@@ -59,4 +62,4 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM"]
 ignore = ["E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["*"]
+known-first-party = ["json2sql"]
