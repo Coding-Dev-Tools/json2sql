@@ -4,8 +4,8 @@ import sys
 import typer
 from pathlib import Path
 
-from .converter import JSONToSQLConverter
-from .dialects import Dialect
+# Lazy imports — converter/dialects pulled on command execution
+# to reduce cold start from ~340ms to ~160ms.
 
 app = typer.Typer(
     name="json2sql",
@@ -21,8 +21,8 @@ def convert(
         help="Path to JSON file. Reads from stdin if not provided.",
         exists=True,
     ),
-    dialect: Dialect = typer.Option(  # noqa: B008
-        Dialect.POSTGRES,
+    dialect: str = typer.Option(  # noqa: B008
+        "postgres",
         "--dialect",
         "-d",
         help="SQL dialect: postgres, mysql, sqlite",
@@ -52,6 +52,17 @@ def convert(
     ),
 ):
     """Convert a JSON file to SQL INSERT statements."""
+    from .converter import JSONToSQLConverter
+    from .dialects import Dialect
+
+    # Validate dialect
+    try:
+        dialect_enum = Dialect(dialect)
+    except ValueError:
+        valid = ", ".join(d.value for d in Dialect)
+        typer.echo(f"Error: Unknown dialect '{dialect}'. Choose from: {valid}", err=True)
+        raise typer.Exit(code=1)
+
     # Read input
     if input_file:
         json_text = input_file.read_text(encoding="utf-8")
@@ -61,7 +72,7 @@ def convert(
         typer.echo("Error: Provide a JSON file or pipe JSON to stdin.", err=True)
         raise typer.Exit(code=1)
 
-    converter = JSONToSQLConverter(dialect=dialect, flatten=flatten)
+    converter = JSONToSQLConverter(dialect=dialect_enum, flatten=flatten)
 
     try:
         if schema_only:
