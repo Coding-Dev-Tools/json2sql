@@ -164,14 +164,14 @@ class TestCLIVersion:
         """Show version."""
         result = runner.invoke(app, ["version"])
         assert result.exit_code == 0
-        assert "0.1.0" in result.stdout
+        assert "0.1.1" in result.stdout
 
     def test_version_output_format(self):
         """Version output should include the tool name."""
         result = runner.invoke(app, ["version"])
         assert result.exit_code == 0
         assert "json2sql" in result.stdout
-        assert "0.1.0" in result.stdout
+        assert "0.1.1" in result.stdout
         # Should contain version number but not error messages
         assert "Error" not in result.stdout
 
