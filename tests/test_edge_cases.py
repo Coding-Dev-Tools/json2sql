@@ -72,15 +72,21 @@ class TestConverterFlattenEdgeCases:
         """Top-level column type upgrades from TEXT to more specific type (line 175)."""
         from json2sql.converter import JSONToSQLConverter
 
-        converter = JSONToSQLConverter()
         data = [
             {"key": "hello"},  # string → TEXT
             {"key": 100},  # integer → upgrade to INTEGER
         ]
-        result = converter.convert(json.dumps(data))
+        # Non-flatten path (_infer_columns)
+        result = JSONToSQLConverter().convert(json.dumps(data))
         assert "INTEGER" in result
         assert "'hello'" in result
         assert "100" in result
+
+        # Flatten path (_infer_columns_flattened else branch, line 175)
+        result2 = JSONToSQLConverter(flatten=True).convert(json.dumps(data))
+        assert "INTEGER" in result2
+        assert "'hello'" in result2
+        assert "100" in result2
 
 
 class TestConverterExtraEdgePaths:
