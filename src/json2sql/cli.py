@@ -1,6 +1,8 @@
 """CLI interface for json2sql using Typer."""
 
 import sys
+
+import typer
 from pathlib import Path
 
 # Lazy imports — converter/dialects pulled on command execution
