@@ -61,7 +61,7 @@ def convert(
     except ValueError:
         valid = ", ".join(d.value for d in Dialect)
         typer.echo(f"Error: Unknown dialect '{dialect}'. Choose from: {valid}", err=True)
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     # Read input
     if input_file:
