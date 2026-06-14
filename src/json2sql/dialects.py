@@ -64,7 +64,7 @@ def format_value(value: Any, dialect: Dialect) -> str:
     if isinstance(value, str):
         escaped = value.replace("'", "''")
         return f"'{escaped}'"
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return str(value)
     return f"'{value}'"
 
