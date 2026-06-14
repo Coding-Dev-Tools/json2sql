@@ -1,6 +1,7 @@
 """CLI interface for json2sql using Typer."""
 
 import sys
+
 import typer
 from pathlib import Path
 

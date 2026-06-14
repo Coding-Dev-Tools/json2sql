@@ -1,7 +1,9 @@
 """Tests for json2sql converter."""
 
 import json
+
 import pytest
+
 from json2sql.converter import JSONToSQLConverter
 from json2sql.dialects import Dialect
 
@@ -466,9 +468,11 @@ class TestGenerateSchema:
 
     def test_version_in_init_matches_pyproject(self):
         """pyproject.toml version must match __init__.__version__."""
-        import tomllib
-        from json2sql import __version__
         from pathlib import Path
+
+        import tomllib
+
+        from json2sql import __version__
         pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
         with open(pyproject, "rb") as f:
             data = tomllib.load(f)

@@ -1,8 +1,10 @@
 """Tests for the json2sql CLI interface."""
 
 import json
-from json2sql.cli import app
+
 from typer.testing import CliRunner
+
+from json2sql.cli import app
 
 runner = CliRunner()
 
