@@ -1,6 +1,7 @@
 """CLI interface for json2sql using Typer."""
 
 import sys
+
 import typer
 from pathlib import Path
 
@@ -103,7 +104,7 @@ def convert(
 
 
 @app.command()
-def mcp():
+def mcp() -> None:
     """Run as an MCP (Model Context Protocol) server over stdio.
 
     AI coding agents (Claude Code, Cursor, etc.) use this to interact
@@ -122,7 +123,7 @@ def mcp():
 
 
 @app.command()
-def version():
+def version() -> None:
     """Show version."""
     from . import __version__
     typer.echo(f"json2sql {__version__}")
