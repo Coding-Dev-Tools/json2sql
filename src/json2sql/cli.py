@@ -1,9 +1,9 @@
 """CLI interface for json2sql using Typer."""
 
 import sys
+from pathlib import Path
 
 import typer
-from pathlib import Path
 
 # Lazy imports — converter/dialects pulled on command execution
 # to reduce cold start from ~340ms to ~160ms.
@@ -15,9 +15,6 @@ except ImportError:
     warnings.warn("revenueholdings-license not installed; license checks skipped", stacklevel=2)
     def require_license(product: str) -> None:  # type: ignore[misc]
         pass
-
-from .converter import JSONToSQLConverter
-from .dialects import Dialect
 
 app = typer.Typer(
     name="json2sql",

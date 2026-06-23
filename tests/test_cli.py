@@ -220,7 +220,12 @@ class TestCLIErrorHandling:
         """Running without args shows help."""
         result = runner.invoke(app)
         # Typer with no_args_is_help may exit 0 or 2 depending on version
-        assert "Usage:" in result.stdout or "Usage:" in result.stderr or "Convert" in result.stdout or "Convert" in result.stderr
+        assert (
+            "Usage:" in result.stdout
+            or "Usage:" in result.stderr
+            or "Convert" in result.stdout
+            or "Convert" in result.stderr
+        )
 
     def test_convert_array_of_objects(self, tmp_path):
         """Convert array of objects via CLI."""
