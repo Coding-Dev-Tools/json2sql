@@ -84,7 +84,7 @@ class JSONToSQLConverter:
             # Process nested arrays into child tables
             for obj in objects:
                 for key, value in obj.items():
-                    if isinstance(value, list) and value and isinstance(value[0], dict):
+                    if isinstance(value, list) and value and all(isinstance(v, dict) for v in value):
                         self._flatten_nested(table_name, key, value, obj)
         else:
             columns = self._infer_columns(objects)
@@ -216,5 +216,5 @@ class JSONToSQLConverter:
             return
         for obj in objects:
             for key, value in obj.items():
-                if isinstance(value, list) and value and isinstance(value[0], dict):
+                if isinstance(value, list) and value and all(isinstance(v, dict) for v in value):
                     self._flatten_nested(table_name, key, value, obj)
