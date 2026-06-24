@@ -163,7 +163,7 @@ class JSONToSQLConverter:
                             inferred = sql_type_for(sub_value, self.dialect)
                             if columns[flat_key] == "TEXT" and inferred != "TEXT":
                                 columns[flat_key] = inferred
-                elif isinstance(value, list) and value and isinstance(value[0], dict) and self.flatten:
+                elif isinstance(value, list) and value and self.flatten and all(isinstance(v, dict) for v in value):
                     # Skip - goes to separate table
                     pass
                 else:
