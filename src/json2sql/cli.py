@@ -1,9 +1,9 @@
 """CLI interface for json2sql using Typer."""
 
 import sys
+from pathlib import Path
 
 import typer
-from pathlib import Path
 
 # Lazy imports — converter/dialects pulled on command execution
 # to reduce cold start from ~340ms to ~160ms.
@@ -64,8 +64,6 @@ def convert(
     ),
 ):
     """Convert a JSON file to SQL INSERT statements."""
-    from .converter import JSONToSQLConverter
-    from .dialects import Dialect
 
     # Validate dialect
     try:
