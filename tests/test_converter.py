@@ -471,9 +471,9 @@ class TestGenerateSchema:
         from pathlib import Path
 
         try:
-    import tomllib
-except ImportError:
-    import tomli as tomllib  # Python < 3.11 backport
+            import tomllib
+        except ImportError:
+            import tomli as tomllib  # Python < 3.11 backport
 
         from json2sql import __version__
         pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
