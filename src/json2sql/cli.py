@@ -12,9 +12,14 @@ try:
     from revenueholdings_license import require_license
 except ImportError:
     import warnings
-    warnings.warn("revenueholdings-license not installed; license checks skipped", stacklevel=2)
+
+    warnings.warn(
+        "revenueholdings-license not installed; license checks skipped", stacklevel=2
+    )
+
     def require_license(product: str) -> None:  # type: ignore[misc]
         pass
+
 
 from .converter import JSONToSQLConverter
 from .dialects import Dialect
@@ -70,7 +75,9 @@ def convert(
         dialect_enum = Dialect(dialect)
     except ValueError:
         valid = ", ".join(d.value for d in Dialect)
-        typer.echo(f"Error: Unknown dialect '{dialect}'. Choose from: {valid}", err=True)
+        typer.echo(
+            f"Error: Unknown dialect '{dialect}'. Choose from: {valid}", err=True
+        )
         raise typer.Exit(code=1) from None
 
     # Read input
@@ -124,6 +131,7 @@ def mcp() -> None:
 def version() -> None:
     """Show version."""
     from . import __version__
+
     typer.echo(f"json2sql {__version__}")
 
 
