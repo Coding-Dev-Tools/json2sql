@@ -59,7 +59,9 @@ class TestCLIBasic:
         json_file.write_text(json.dumps({"name": "test"}))
         out_file = tmp_path / "out.sql"
 
-        result = runner.invoke(app, ["convert", str(json_file), "--output", str(out_file)])
+        result = runner.invoke(
+            app, ["convert", str(json_file), "--output", str(out_file)]
+        )
         assert result.exit_code == 0
         assert out_file.exists()
         content = out_file.read_text()
@@ -117,14 +119,18 @@ class TestCLIBasic:
         json_file = tmp_path / "nested.json"
         json_file.write_text(json.dumps(data))
 
-        result = runner.invoke(app, ["convert", str(json_file), "--schema-only", "--flatten"])
+        result = runner.invoke(
+            app, ["convert", str(json_file), "--schema-only", "--flatten"]
+        )
         assert result.exit_code == 0
         assert "CREATE TABLE" in result.stdout
         assert "INSERT INTO" not in result.stdout
 
     def test_convert_stdin(self):
         """Read JSON from stdin."""
-        result = runner.invoke(app, ["convert"], input=json.dumps({"name": "stdin_test"}))
+        result = runner.invoke(
+            app, ["convert"], input=json.dumps({"name": "stdin_test"})
+        )
         assert result.exit_code == 0
         assert "'stdin_test'" in result.stdout
 
@@ -186,6 +192,7 @@ class TestMCP:
         import builtins
         import sys
         import unittest.mock as mock
+
         # Remove click_to_mcp from cache so the import statement is executed
         old_mod = sys.modules.pop("click_to_mcp", None)
 
@@ -210,7 +217,11 @@ class TestMCP:
         """mcp command is registered and responds to --help."""
         result = runner.invoke(app, ["mcp", "--help"])
         assert result.exit_code == 0
-        assert "MCP" in result.stdout or "Model Context" in result.stdout or "stdio" in result.stdout
+        assert (
+            "MCP" in result.stdout
+            or "Model Context" in result.stdout
+            or "stdio" in result.stdout
+        )
 
 
 class TestCLIErrorHandling:
@@ -220,7 +231,12 @@ class TestCLIErrorHandling:
         """Running without args shows help."""
         result = runner.invoke(app)
         # Typer with no_args_is_help may exit 0 or 2 depending on version
-        assert "Usage:" in result.stdout or "Usage:" in result.stderr or "Convert" in result.stdout or "Convert" in result.stderr
+        assert (
+            "Usage:" in result.stdout
+            or "Usage:" in result.stderr
+            or "Convert" in result.stdout
+            or "Convert" in result.stderr
+        )
 
     def test_convert_array_of_objects(self, tmp_path):
         """Convert array of objects via CLI."""
@@ -249,7 +265,9 @@ class TestCLIErrorHandling:
         json_file.write_text(json.dumps(data))
 
         # Postgres
-        result = runner.invoke(app, ["convert", str(json_file), "--dialect", "postgres"])
+        result = runner.invoke(
+            app, ["convert", str(json_file), "--dialect", "postgres"]
+        )
         assert result.exit_code == 0
         assert "TRUE" in result.stdout
         assert "FALSE" in result.stdout
