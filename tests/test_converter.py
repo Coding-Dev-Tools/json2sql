@@ -470,7 +470,10 @@ class TestGenerateSchema:
         """pyproject.toml version must match __init__.__version__."""
         from pathlib import Path
 
-        import tomllib
+        try:
+    import tomllib
+except ImportError:
+    import tomli as tomllib  # Python < 3.11 backport
 
         from json2sql import __version__
         pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
