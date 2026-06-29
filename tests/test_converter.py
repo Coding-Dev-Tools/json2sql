@@ -25,6 +25,7 @@ def converter_sqlite():
 
 # --- Basic conversion tests ---
 
+
 class TestBasicConversion:
     def test_single_object_postgres(self, converter_postgres):
         data = json.dumps({"name": "Alice", "age": 30, "active": True})
@@ -36,10 +37,12 @@ class TestBasicConversion:
         assert "TRUE" in result
 
     def test_array_of_objects(self, converter_postgres):
-        data = json.dumps([
-            {"name": "Alice", "age": 30},
-            {"name": "Bob", "age": 25},
-        ])
+        data = json.dumps(
+            [
+                {"name": "Alice", "age": 30},
+                {"name": "Bob", "age": 25},
+            ]
+        )
         result = converter_postgres.convert(data, table_name="users")
         assert "CREATE TABLE" in result
         assert "INSERT INTO" in result
@@ -64,6 +67,7 @@ class TestBasicConversion:
 
 
 # --- Dialect tests ---
+
 
 class TestDialects:
     def test_mysql_boolean(self, converter_mysql):
@@ -97,6 +101,7 @@ class TestDialects:
 
 # --- Nested/flatten tests ---
 
+
 class TestFlatten:
     def test_flatten_nested_object(self):
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
@@ -108,14 +113,16 @@ class TestFlatten:
 
     def test_flatten_nested_array(self):
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
-        data = json.dumps({
-            "id": 1,
-            "name": "Alice",
-            "orders": [
-                {"product": "Widget", "qty": 3},
-                {"product": "Gadget", "qty": 1},
-            ],
-        })
+        data = json.dumps(
+            {
+                "id": 1,
+                "name": "Alice",
+                "orders": [
+                    {"product": "Widget", "qty": 3},
+                    {"product": "Gadget", "qty": 1},
+                ],
+            }
+        )
         result = conv.convert(data, table_name="users")
         assert "CREATE TABLE" in result
         # Should create a separate table for orders
@@ -123,6 +130,7 @@ class TestFlatten:
 
 
 # --- Schema-only tests ---
+
 
 class TestSchemaOnly:
     def test_generate_schema(self, converter_postgres):
@@ -133,6 +141,7 @@ class TestSchemaOnly:
 
 
 # --- Edge cases ---
+
 
 class TestFlattenRegression:
     """Regression tests for flatten bugs."""
@@ -145,20 +154,23 @@ class TestFlattenRegression:
         row but removed from columns, causing a mismatch.
         """
         import re
+
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
-        data = json.dumps({
-            "id": 1,
-            "name": "Alice",
-            "orders": [
-                {"product": "Widget", "qty": 3},
-            ],
-        })
+        data = json.dumps(
+            {
+                "id": 1,
+                "name": "Alice",
+                "orders": [
+                    {"product": "Widget", "qty": 3},
+                ],
+            }
+        )
         result = conv.convert(data, table_name="users")
         # Parse the INSERT for the parent table
         for block in result.split("\n\n"):
-            if 'INSERT INTO' in block and '"users"' in block:
-                cols = re.search(r'\(([^)]+)\)\s*VALUES', block)
-                vals = re.search(r'VALUES\s*\(([^)]+)\)', block)
+            if "INSERT INTO" in block and '"users"' in block:
+                cols = re.search(r"\(([^)]+)\)\s*VALUES", block)
+                vals = re.search(r"VALUES\s*\(([^)]+)\)", block)
                 if cols and vals:
                     c_count = len([c for c in cols.group(1).split(",") if c.strip()])
                     v_count = len([v for v in vals.group(1).split(",") if v.strip()])
@@ -172,17 +184,20 @@ class TestFlattenRegression:
         should produce column-value count match.
         """
         import re
+
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
-        data = json.dumps({
-            "id": 1,
-            "profile": {"age": 30, "city": "NYC"},
-            "tags": [{"name": "dev"}],
-        })
+        data = json.dumps(
+            {
+                "id": 1,
+                "profile": {"age": 30, "city": "NYC"},
+                "tags": [{"name": "dev"}],
+            }
+        )
         result = conv.convert(data, table_name="users")
         for block in result.split("\n\n"):
-            if 'INSERT INTO' in block and '"users"' in block:
-                cols = re.search(r'\(([^)]+)\)\s*VALUES', block)
-                vals = re.search(r'VALUES\s*\(([^)]+)\)', block)
+            if "INSERT INTO" in block and '"users"' in block:
+                cols = re.search(r"\(([^)]+)\)\s*VALUES", block)
+                vals = re.search(r"VALUES\s*\(([^)]+)\)", block)
                 if cols and vals:
                     c_count = len([c for c in cols.group(1).split(",") if c.strip()])
                     v_count = len([v for v in vals.group(1).split(",") if v.strip()])
@@ -219,10 +234,12 @@ class TestFlattenDetail:
     def test_flatten_multiple_rows(self):
         """Multiple objects with nested dicts should flatten consistently."""
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
-        data = json.dumps([
-            {"id": 1, "meta": {"color": "red", "size": "M"}},
-            {"id": 2, "meta": {"color": "blue", "size": "L"}},
-        ])
+        data = json.dumps(
+            [
+                {"id": 1, "meta": {"color": "red", "size": "M"}},
+                {"id": 2, "meta": {"color": "blue", "size": "L"}},
+            ]
+        )
         result = conv.convert(data, table_name="items")
         assert '"meta_color"' in result
         assert '"meta_size"' in result
@@ -233,13 +250,15 @@ class TestFlattenDetail:
     def test_flatten_deeply_nested(self):
         """Deeply nested dicts should be one-level flattened (not recursive)."""
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
-        data = json.dumps({
-            "id": 1,
-            "location": {
-                "city": "NYC",
-                "coordinates": {"lat": 40.71, "lng": -74.01},
-            },
-        })
+        data = json.dumps(
+            {
+                "id": 1,
+                "location": {
+                    "city": "NYC",
+                    "coordinates": {"lat": 40.71, "lng": -74.01},
+                },
+            }
+        )
         result = conv.convert(data, table_name="places")
         # First-level flatten: location_city and location_coordinates
         assert '"location_city"' in result
@@ -261,11 +280,13 @@ class TestFlattenDetail:
     def test_flatten_with_array_and_object_mixed(self):
         """Mix of nested arrays and nested objects with flatten."""
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
-        data = json.dumps({
-            "id": 1,
-            "profile": {"age": 30, "city": "NYC"},
-            "tags": [{"name": "dev"}, {"name": "python"}],
-        })
+        data = json.dumps(
+            {
+                "id": 1,
+                "profile": {"age": 30, "city": "NYC"},
+                "tags": [{"name": "dev"}, {"name": "python"}],
+            }
+        )
         result = conv.convert(data, table_name="users")
         assert '"profile_age"' in result
         assert '"profile_city"' in result
@@ -289,11 +310,13 @@ class TestSchemaOnlyWithFlatten:
     def test_generate_schema_with_flatten_mixed(self):
         """Schema-only with flatten for nested arrays and objects."""
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
-        data = json.dumps({
-            "id": 1,
-            "profile": {"age": 30},
-            "orders": [{"product": "Widget", "qty": 3}],
-        })
+        data = json.dumps(
+            {
+                "id": 1,
+                "profile": {"age": 30},
+                "orders": [{"product": "Widget", "qty": 3}],
+            }
+        )
         result = conv.generate_schema(data, table_name="users")
         assert "CREATE TABLE" in result
         assert '"profile_age"' in result
@@ -308,21 +331,24 @@ class TestFlattenMissingSubKeysNullPadding:
         """When one object's nested dict is missing a sub-key present in others,
         the missing sub-key should get NULL in the INSERT row."""
         import re
+
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
-        data = json.dumps([
-            {"id": 1, "meta": {"city": "NYC"}},
-            {"id": 2, "meta": {"city": "LA", "state": "CA"}},
-        ])
+        data = json.dumps(
+            [
+                {"id": 1, "meta": {"city": "NYC"}},
+                {"id": 2, "meta": {"city": "LA", "state": "CA"}},
+            ]
+        )
         result = conv.convert(data, table_name="users")
         # The INSERT should have matching column/value counts per row
         for block in result.split("\n\n"):
-            if 'INSERT INTO' in block and '"users"' in block:
-                cols = re.search(r'\(([^)]+)\)\s*VALUES', block)
-                vals = re.search(r'VALUES\s*(.+)', block, re.DOTALL)
+            if "INSERT INTO" in block and '"users"' in block:
+                cols = re.search(r"\(([^)]+)\)\s*VALUES", block)
+                vals = re.search(r"VALUES\s*(.+)", block, re.DOTALL)
                 if cols and vals:
                     c_count = len([c for c in cols.group(1).split(",") if c.strip()])
                     # Count value groups (rows)
-                    row_matches = re.findall(r'\(([^)]+)\)', vals.group(1))
+                    row_matches = re.findall(r"\(([^)]+)\)", vals.group(1))
                     for row_str in row_matches:
                         v_count = len([v for v in row_str.split(",") if v.strip()])
                         assert v_count == c_count, (
@@ -334,10 +360,12 @@ class TestFlattenMissingSubKeysNullPadding:
     def test_flatten_nested_dict_all_keys_present(self):
         """When all objects have the same nested sub-keys, no NULL padding needed."""
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
-        data = json.dumps([
-            {"id": 1, "meta": {"city": "NYC", "state": "NY"}},
-            {"id": 2, "meta": {"city": "LA", "state": "CA"}},
-        ])
+        data = json.dumps(
+            [
+                {"id": 1, "meta": {"city": "NYC", "state": "NY"}},
+                {"id": 2, "meta": {"city": "LA", "state": "CA"}},
+            ]
+        )
         result = conv.convert(data, table_name="users")
         assert '"meta_city"' in result
         assert '"meta_state"' in result
@@ -352,13 +380,15 @@ class TestFlattenNestedFKNotShadowed:
         """A nested object's own key that matches the parent FK column name
         should NOT be silently replaced by the parent's FK value."""
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
-        data = json.dumps({
-            "id": 1,
-            "name": "Alice",
-            "orders": [
-                {"users_id": 999, "product": "Widget", "qty": 3},
-            ],
-        })
+        data = json.dumps(
+            {
+                "id": 1,
+                "name": "Alice",
+                "orders": [
+                    {"users_id": 999, "product": "Widget", "qty": 3},
+                ],
+            }
+        )
         result = conv.convert(data, table_name="users")
         # The child table should preserve the nested object's users_id value (999)
         # rather than silently replacing it with the parent's id (1)
@@ -384,10 +414,12 @@ class TestEdgeCases:
 
     def test_missing_keys_across_rows(self, converter_postgres):
         # Objects with different keys should all get columns
-        data = json.dumps([
-            {"name": "Alice", "age": 30},
-            {"name": "Bob", "email": "bob@test.com"},
-        ])
+        data = json.dumps(
+            [
+                {"name": "Alice", "age": 30},
+                {"name": "Bob", "email": "bob@test.com"},
+            ]
+        )
         result = converter_postgres.convert(data, table_name="users")
         assert "email" in result
         assert "age" in result
@@ -427,14 +459,16 @@ class TestGenerateSchema:
     def test_generate_schema_with_flatten_nested_array(self):
         """generate_schema with flatten=True should produce CREATE TABLE for nested arrays."""
         conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
-        data = json.dumps({
-            "id": 1,
-            "name": "Alice",
-            "orders": [
-                {"product": "Widget", "qty": 3},
-                {"product": "Gadget", "qty": 1},
-            ],
-        })
+        data = json.dumps(
+            {
+                "id": 1,
+                "name": "Alice",
+                "orders": [
+                    {"product": "Widget", "qty": 3},
+                    {"product": "Gadget", "qty": 1},
+                ],
+            }
+        )
         result = conv.generate_schema(data, table_name="users")
         assert "CREATE TABLE" in result
         # Should include the nested table schema
@@ -476,6 +510,7 @@ class TestGenerateSchema:
             import tomli as tomllib  # Python < 3.11 backport
 
         from json2sql import __version__
+
         pyproject = Path(__file__).resolve().parent.parent / "pyproject.toml"
         with open(pyproject, "rb") as f:
             data = tomllib.load(f)
