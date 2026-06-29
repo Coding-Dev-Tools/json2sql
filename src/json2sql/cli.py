@@ -1,5 +1,6 @@
 """CLI interface for json2sql using Typer."""
 
+import os
 import sys
 from pathlib import Path
 
@@ -24,11 +25,53 @@ except ImportError:
 from .converter import JSONToSQLConverter
 from .dialects import Dialect
 
+_require_license_strict: bool = False
+
 app = typer.Typer(
     name="json2sql",
     help="Convert JSON files/datasets to SQL INSERT statements.",
     no_args_is_help=True,
 )
+
+
+@app.callback()
+def _app_callback(
+    require_license_flag: bool = typer.Option(
+        False,
+        "--require-license",
+        help=(
+            "Exit with an error if revenueholdings-license is not installed "
+            "or if the license check fails. "
+            "Also enabled via REVENUEHOLDINGS_REQUIRE_LICENSE=1."
+        ),
+    ),
+) -> None:
+    """Convert JSON files/datasets to SQL INSERT statements."""
+    global _require_license_strict
+    _require_license_strict = require_license_flag or bool(
+        os.environ.get("REVENUEHOLDINGS_REQUIRE_LICENSE")
+    )
+
+
+def _check_license(tool_name: str) -> None:
+    """Check revenueholdings license; raise on failure if strict mode is enabled."""
+    if os.environ.get("REVENUEHOLDINGS_LICENSE_BYPASS"):
+        return
+    try:
+        from revenueholdings_license import require_license
+
+        require_license(tool_name)
+    except ImportError:
+        if _require_license_strict:
+            typer.echo(
+                "Error: revenueholdings-license is not installed. "
+                "Install it with: pip install revenueholdings-license",
+                err=True,
+            )
+            raise typer.Exit(code=1) from None
+    except Exception:
+        if _require_license_strict:
+            raise
 
 
 @app.command()
@@ -69,6 +112,7 @@ def convert(
     ),
 ):
     """Convert a JSON file to SQL INSERT statements."""
+    _check_license("json2sql")
 
     # Validate dialect
     try:
@@ -115,6 +159,7 @@ def mcp() -> None:
     AI coding agents (Claude Code, Cursor, etc.) use this to interact
     with json2sql tools directly.
     """
+    _check_license("json2sql")
     try:
         from click_to_mcp import run  # type: ignore[import-untyped]
     except ImportError:
