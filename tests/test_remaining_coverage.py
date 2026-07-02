@@ -21,7 +21,8 @@ class TestMainModule:
         """python -m json2sql convert --help works (covers __main__.py)."""
         result = subprocess.run(
             [sys.executable, "-m", "json2sql", "convert", "--help"],
-            capture_output=True, text=False,
+            capture_output=True,
+            text=False,
         )
         assert result.returncode == 0
         assert b"Usage" in result.stdout
@@ -65,6 +66,7 @@ class TestMCPCommand:
     def test_mcp_without_click_to_mcp_raises_error(self):
         """mcp subcommand without click_to_mcp shows ImportError."""
         import builtins
+
         original_import = builtins.__import__
 
         def mock_import(name, *args, **kwargs):
@@ -75,4 +77,7 @@ class TestMCPCommand:
         with patch("builtins.__import__", mock_import):
             result = runner.invoke(app, ["mcp"])
         assert result.exit_code != 0
-        assert "click_to_mcp" in result.output.lower() or "pip install" in result.output.lower()
+        assert (
+            "click_to_mcp" in result.output.lower()
+            or "pip install" in result.output.lower()
+        )

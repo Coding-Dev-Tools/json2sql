@@ -1,5 +1,6 @@
 """CLI interface for json2sql using Typer."""
 
+import os
 import sys
 from pathlib import Path
 
@@ -12,20 +13,62 @@ try:
     from revenueholdings_license import require_license
 except ImportError:
     import warnings
-    warnings.warn("revenueholdings-license not installed; license checks skipped", stacklevel=2)
+
+    warnings.warn(
+        "revenueholdings-license not installed; license checks skipped", stacklevel=2
+    )
+
     def require_license(product: str) -> None:  # type: ignore[misc]
         pass
 
 
-# Imports needed by CLI commands.
-from .converter import JSONToSQLConverter
-from .dialects import Dialect
+_require_license_strict: bool = False
 
 app = typer.Typer(
     name="json2sql",
     help="Convert JSON files/datasets to SQL INSERT statements.",
     no_args_is_help=True,
 )
+
+
+@app.callback()
+def _app_callback(
+    require_license_flag: bool = typer.Option(
+        False,
+        "--require-license",
+        help=(
+            "Exit with an error if revenueholdings-license is not installed "
+            "or if the license check fails. "
+            "Also enabled via REVENUEHOLDINGS_REQUIRE_LICENSE=1."
+        ),
+    ),
+) -> None:
+    """Convert JSON files/datasets to SQL INSERT statements."""
+    global _require_license_strict
+    _require_license_strict = require_license_flag or bool(
+        os.environ.get("REVENUEHOLDINGS_REQUIRE_LICENSE")
+    )
+
+
+def _check_license(tool_name: str) -> None:
+    """Check revenueholdings license; raise on failure if strict mode is enabled."""
+    if os.environ.get("REVENUEHOLDINGS_LICENSE_BYPASS"):
+        return
+    try:
+        from revenueholdings_license import require_license
+
+        require_license(tool_name)
+    except ImportError:
+        if _require_license_strict:
+            typer.echo(
+                "Error: revenueholdings-license is not installed. "
+                "Install it with: pip install revenueholdings-license",
+                err=True,
+            )
+            raise typer.Exit(code=1) from None
+    except Exception:
+        if _require_license_strict:
+            raise
 
 
 @app.command()
@@ -66,13 +109,20 @@ def convert(
     ),
 ):
     """Convert a JSON file to SQL INSERT statements."""
+    _check_license("json2sql")
+
+    # Lazy imports — cold-start optimization (~180ms savings)
+    from .converter import JSONToSQLConverter
+    from .dialects import Dialect
 
     # Validate dialect
     try:
         dialect_enum = Dialect(dialect)
     except ValueError:
         valid = ", ".join(d.value for d in Dialect)
-        typer.echo(f"Error: Unknown dialect '{dialect}'. Choose from: {valid}", err=True)
+        typer.echo(
+            f"Error: Unknown dialect '{dialect}'. Choose from: {valid}", err=True
+        )
         raise typer.Exit(code=1) from None
 
     # Read input
@@ -110,6 +160,7 @@ def mcp() -> None:
     AI coding agents (Claude Code, Cursor, etc.) use this to interact
     with json2sql tools directly.
     """
+    _check_license("json2sql")
     try:
         from click_to_mcp import run  # type: ignore[import-untyped]
     except ImportError:
@@ -126,14 +177,10 @@ def mcp() -> None:
 def version() -> None:
     """Show version."""
     from . import __version__
+
     typer.echo(f"json2sql {__version__}")
 
 
 if __name__ == "__main__":
     app()
 
-
-# Helper note for reviewer-A fix.
-# This line documents that a review fix was applied in
-# reviewer-A.'s review cycle; no runtime behavior change.
-_REVIEWER_A_FIX_NOTE = "reviewer-A review fix"

@@ -130,3 +130,15 @@ json2sql is one of eleven CLI tools in the Revenue Holdings suite. One license c
 ## License
 
 MIT
+
+## Install
+
+```bash
+npm install
+```
+
+## Test
+
+```bash
+npm test  # runs: node --test tests/
+```

@@ -1,4 +1,5 @@
 """Standalone tests for json2sql dialects module."""
+
 import pytest
 
 from json2sql.dialects import (
@@ -11,6 +12,7 @@ from json2sql.dialects import (
 )
 
 # --- Dialect enum ---
+
 
 class TestDialectEnum:
     """Dialect enum values and membership."""
@@ -30,12 +32,18 @@ class TestDialectEnum:
 
 # --- sql_type_for ---
 
+
 class TestSQLTypeFor:
     """Python type → SQL type mapping per dialect."""
 
-    @pytest.mark.parametrize("dialect", [Dialect.POSTGRES, Dialect.MYSQL, Dialect.SQLITE])
+    @pytest.mark.parametrize(
+        "dialect", [Dialect.POSTGRES, Dialect.MYSQL, Dialect.SQLITE]
+    )
     def test_string_type(self, dialect):
-        assert "TEXT" in sql_type_for("hello", dialect).upper() or "VARCHAR" in sql_type_for("hello", dialect).upper()
+        assert (
+            "TEXT" in sql_type_for("hello", dialect).upper()
+            or "VARCHAR" in sql_type_for("hello", dialect).upper()
+        )
 
     def test_postgres_int(self):
         assert sql_type_for(42, Dialect.POSTGRES) == "INTEGER"
@@ -83,6 +91,7 @@ class TestSQLTypeFor:
 
 # --- quote_identifier ---
 
+
 class TestQuoteIdentifier:
     """Identifier quoting per dialect."""
 
@@ -108,6 +117,7 @@ class TestQuoteIdentifier:
 
 
 # --- format_value ---
+
 
 class TestFormatValue:
     """Python value → SQL literal formatting."""
@@ -161,6 +171,7 @@ class TestFormatValue:
 
 # --- create_table_sql ---
 
+
 class TestCreateTableSQL:
     """CREATE TABLE statement generation."""
 
@@ -194,6 +205,7 @@ class TestCreateTableSQL:
 
 
 # --- insert_sql ---
+
 
 class TestInsertSQL:
     """INSERT statement generation."""
