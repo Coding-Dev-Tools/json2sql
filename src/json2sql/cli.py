@@ -22,9 +22,6 @@ except ImportError:
         pass
 
 
-from .converter import JSONToSQLConverter
-from .dialects import Dialect
-
 _require_license_strict: bool = False
 
 app = typer.Typer(
@@ -114,6 +111,10 @@ def convert(
     """Convert a JSON file to SQL INSERT statements."""
     _check_license("json2sql")
 
+    # Lazy imports — cold-start optimization (~180ms savings)
+    from .converter import JSONToSQLConverter
+    from .dialects import Dialect
+
     # Validate dialect
     try:
         dialect_enum = Dialect(dialect)
@@ -182,3 +183,4 @@ def version() -> None:
 
 if __name__ == "__main__":
     app()
+
