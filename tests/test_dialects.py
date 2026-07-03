@@ -36,14 +36,9 @@ class TestDialectEnum:
 class TestSQLTypeFor:
     """Python type → SQL type mapping per dialect."""
 
-    @pytest.mark.parametrize(
-        "dialect", [Dialect.POSTGRES, Dialect.MYSQL, Dialect.SQLITE]
-    )
+    @pytest.mark.parametrize("dialect", [Dialect.POSTGRES, Dialect.MYSQL, Dialect.SQLITE])
     def test_string_type(self, dialect):
-        assert (
-            "TEXT" in sql_type_for("hello", dialect).upper()
-            or "VARCHAR" in sql_type_for("hello", dialect).upper()
-        )
+        assert "TEXT" in sql_type_for("hello", dialect).upper() or "VARCHAR" in sql_type_for("hello", dialect).upper()
 
     def test_postgres_int(self):
         assert sql_type_for(42, Dialect.POSTGRES) == "INTEGER"
@@ -114,6 +109,26 @@ class TestQuoteIdentifier:
         for dialect in Dialect:
             result = quote_identifier("", dialect)
             assert len(result) >= 2
+
+    def test_embedded_quote_mysql(self):
+        """MySQL: backtick embedded in identifier is escaped by doubling."""
+        assert quote_identifier("my`table", Dialect.MYSQL) == "`my``table`"
+
+    def test_embedded_quote_postgres(self):
+        """Postgres: double-quote embedded in identifier is escaped by doubling."""
+        assert quote_identifier('my"table', Dialect.POSTGRES) == '"my""table"'
+
+    def test_embedded_quote_sqlite(self):
+        """SQLite: double-quote embedded in identifier is escaped by doubling."""
+        assert quote_identifier('my"table', Dialect.SQLITE) == '"my""table"'
+
+    def test_multiple_embedded_quotes_mysql(self):
+        """MySQL: multiple backticks in identifier are all escaped."""
+        assert quote_identifier("a`b`c", Dialect.MYSQL) == "`a``b``c`"
+
+    def test_multiple_embedded_quotes_postgres(self):
+        """Postgres: multiple double-quotes in identifier are all escaped."""
+        assert quote_identifier('a"b"c', Dialect.POSTGRES) == '"a""b""c"'
 
 
 # --- format_value ---

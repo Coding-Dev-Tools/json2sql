@@ -34,3 +34,20 @@ jobs:
         run: pip install ruff && ruff check src/ tests/ --target-version py310
 
       - name: Run tests
+        run: |
+          python -m pytest tests/ -v --cov=src --cov-report=term-missing
+
+  js-wrapper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b  # v4
+        with:
+          node-version: "20"
+
+      - name: Test the npm wrapper
+        run: node --test tests/*.test.js
