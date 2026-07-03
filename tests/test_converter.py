@@ -174,9 +174,7 @@ class TestFlattenRegression:
                 if cols and vals:
                     c_count = len([c for c in cols.group(1).split(",") if c.strip()])
                     v_count = len([v for v in vals.group(1).split(",") if v.strip()])
-                    assert c_count == v_count, (
-                        f"Column count ({c_count}) != value count ({v_count})"
-                    )
+                    assert c_count == v_count, f"Column count ({c_count}) != value count ({v_count})"
 
     def test_flatten_mixed_nested_array_and_object_count(self):
         """
@@ -201,9 +199,7 @@ class TestFlattenRegression:
                 if cols and vals:
                     c_count = len([c for c in cols.group(1).split(",") if c.strip()])
                     v_count = len([v for v in vals.group(1).split(",") if v.strip()])
-                    assert c_count == v_count, (
-                        f"Column count ({c_count}) != value count ({v_count})"
-                    )
+                    assert c_count == v_count, f"Column count ({c_count}) != value count ({v_count})"
 
 
 class TestFlattenDetail:
@@ -401,6 +397,28 @@ class TestEdgeCases:
         result = converter_postgres.convert(data, table_name="profiles")
         assert "It''s a test" in result  # SQL-escaped single quote
 
+    def test_key_with_embedded_double_quote_postgres(self, converter_postgres):
+        # A JSON key containing " must be escaped in the generated identifier
+        # to prevent SQL injection through untrusted object keys.
+        data = json.dumps({'col"evil': 1})
+        result = converter_postgres.convert(data, table_name="profiles")
+        assert '"col""evil"' in result
+        # Ensure the dangerous unescaped form is NOT present
+        assert '"col"evil"' not in result
+
+    def test_key_with_embedded_double_quote_sqlite(self, converter_sqlite):
+        data = json.dumps({'col"evil': 1})
+        result = converter_sqlite.convert(data, table_name="profiles")
+        assert '"col""evil"' in result
+        assert '"col"evil"' not in result
+
+    def test_key_with_embedded_backtick_mysql(self, converter_mysql):
+        # A JSON key containing a backtick must be escaped in MySQL identifiers.
+        data = json.dumps({"col`evil": 1})
+        result = converter_mysql.convert(data, table_name="profiles")
+        assert "`col``evil`" in result
+        assert "`col`evil`" not in result
+
     def test_float_values(self, converter_postgres):
         data = json.dumps({"price": 19.99})
         result = converter_postgres.convert(data, table_name="products")
@@ -515,6 +533,5 @@ class TestGenerateSchema:
         with open(pyproject, "rb") as f:
             data = tomllib.load(f)
         assert data["project"]["version"] == __version__, (
-            f"pyproject.toml version ({data['project']['version']}) != "
-            f"__init__.__version__ ({__version__})"
+            f"pyproject.toml version ({data['project']['version']}) != __init__.__version__ ({__version__})"
         )

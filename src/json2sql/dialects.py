@@ -47,10 +47,20 @@ def sql_type_for(value: Any, dialect: Dialect) -> str:
 
 
 def quote_identifier(name: str, dialect: Dialect) -> str:
-    """Quote an identifier (table/column name) for the given dialect."""
+    """Quote an identifier (table/column name) for the given dialect.
+
+    Embedded quote characters are escaped by doubling — the standard SQL rule
+    for quoted identifiers — mirroring how ``format_value`` escapes string
+    literals. Without this, a table/column name (which comes straight from
+    untrusted JSON object keys) containing a ``"`` (Postgres/SQLite) or a
+    backtick (MySQL) could break out of the quoted identifier and inject
+    arbitrary SQL into the generated statement.
+    """
     if dialect == Dialect.MYSQL:
-        return f"`{name}`"
-    return f'"{name}"'
+        escaped = name.replace("`", "``")
+        return f"`{escaped}`"
+    escaped = name.replace('"', '""')
+    return f'"{escaped}"'
 
 
 def format_value(value: Any, dialect: Dialect) -> str:
