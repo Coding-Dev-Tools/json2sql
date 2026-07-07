@@ -13,7 +13,6 @@ authors = [{name = "Revenue Holdings"}]
 
 dependencies = [
     "typer>=0.9.0",
-    "rich>=13.0.0",
 ]
 keywords = ["json", "sql", "etl", "data-conversion", "cli"]
 classifiers = [

@@ -7,6 +7,7 @@ import json
 from typer.testing import CliRunner
 
 from json2sql.cli import app
+from json2sql.dialects import Dialect
 
 runner = CliRunner()
 
@@ -100,3 +101,36 @@ class TestConverterExtraEdgePaths:
         result = converter.convert(json.dumps([{"name": "test"}]))
         assert "INSERT INTO" in result
         assert "'test'" in result
+
+    def test_flatten_all_nested_arrays_skips_empty_root_table(self):
+        """When flatten=True and all top-level values are nested arrays,
+        the root table must not emit an invalid empty CREATE TABLE."""
+        from json2sql.converter import JSONToSQLConverter
+
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES, flatten=True)
+        data = json.dumps(
+            {"users": [{"name": "a", "orders": [{"id": 1}]}]}
+        )
+        result = conv.convert(data, table_name="data")
+        # Root table must not appear with empty columns
+        assert "CREATE TABLE \"data\" ( )" not in result
+        assert "INSERT INTO \"data\" ( )" not in result
+        # Child tables for top-level nested arrays should still be generated
+        assert "data_users" in result
+
+    def test_empty_object_no_invalid_sql(self):
+        """Empty JSON object must not produce an empty CREATE TABLE / INSERT."""
+        from json2sql.converter import JSONToSQLConverter
+
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES)
+        result = conv.convert(json.dumps({}), table_name="data")
+        assert "CREATE TABLE" not in result
+        assert "INSERT INTO" not in result
+
+    def test_generate_schema_empty_object_no_invalid_sql(self):
+        """generate_schema on an empty JSON object must not emit an empty table."""
+        from json2sql.converter import JSONToSQLConverter
+
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES)
+        result = conv.generate_schema(json.dumps({}), table_name="data")
+        assert "CREATE TABLE" not in result

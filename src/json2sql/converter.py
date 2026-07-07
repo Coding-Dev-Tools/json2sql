@@ -67,7 +67,9 @@ class JSONToSQLConverter:
         else:
             columns = {"value": "TEXT"}
 
-        statements = [create_table_sql(table_name, columns, self.dialect)]
+        statements = []
+        if columns:
+            statements.append(create_table_sql(table_name, columns, self.dialect))
 
         # Process extra tables from flattening
         self._process_flatten(objects, table_name)
@@ -111,9 +113,13 @@ class JSONToSQLConverter:
                         row.append(format_value(raw, self.dialect))
             rows.append(row)
 
+        if not columns:
+            return ""
         parts = [create_table_sql(table_name, columns, self.dialect)]
         if rows:
-            parts.append(insert_sql(table_name, list(columns.keys()), rows, self.dialect))
+            parts.append(
+                insert_sql(table_name, list(columns.keys()), rows, self.dialect)
+            )
         return "\n\n".join(parts)
 
     def _convert_primitives(self, values: list, table_name: str) -> str:
