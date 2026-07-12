@@ -7,6 +7,7 @@ from .dialects import (
     create_table_sql,
     format_value,
     insert_sql,
+    merge_type,
     sql_type_for,
 )
 
@@ -137,12 +138,18 @@ class JSONToSQLConverter:
         for obj in objects:
             for key, value in obj.items():
                 if key not in columns:
-                    columns[key] = sql_type_for(value, self.dialect)
+                    # A null does not constrain the column yet: keep it unset so a
+                    # later non-null value can still pick a more specific type.
+                    columns[key] = sql_type_for(value, self.dialect) if value is not None else None
                 elif value is not None:
-                    # Upgrade type if we find a non-null value
-                    inferred = sql_type_for(value, self.dialect)
-                    if columns[key] == "TEXT" and inferred != "TEXT":
-                        columns[key] = inferred
+                    cur = columns[key]
+                    columns[key] = (
+                        sql_type_for(value, self.dialect) if cur is None else merge_type(cur, value, self.dialect)
+                    )
+        # Columns that only ever held nulls default to TEXT.
+        for key, t in columns.items():
+            if t is None:
+                columns[key] = sql_type_for(None, self.dialect)
         return columns
 
     def _infer_columns_flattened(
@@ -163,22 +170,28 @@ class JSONToSQLConverter:
                     for sub_key, sub_value in value.items():
                         flat_key = f"{key}_{sub_key}"
                         if flat_key not in columns:
-                            columns[flat_key] = sql_type_for(sub_value, self.dialect)
+                            columns[flat_key] = sql_type_for(sub_value, self.dialect) if sub_value is not None else None
                             flat_map[flat_key] = (key, sub_key)
                         elif sub_value is not None:
-                            inferred = sql_type_for(sub_value, self.dialect)
-                            if columns[flat_key] == "TEXT" and inferred != "TEXT":
-                                columns[flat_key] = inferred
+                            cur = columns[flat_key]
+                            columns[flat_key] = (
+                                sql_type_for(sub_value, self.dialect) if cur is None else merge_type(cur, sub_value, self.dialect)
+                            )
                 elif isinstance(value, list) and value and isinstance(value[0], dict) and self.flatten:
                     # Skip - goes to separate table
                     pass
                 else:
                     if key not in columns:
-                        columns[key] = sql_type_for(value, self.dialect)
+                        columns[key] = sql_type_for(value, self.dialect) if value is not None else None
                     elif value is not None:
-                        inferred = sql_type_for(value, self.dialect)
-                        if columns[key] == "TEXT" and inferred != "TEXT":
-                            columns[key] = inferred
+                        cur = columns[key]
+                        columns[key] = (
+                            sql_type_for(value, self.dialect) if cur is None else merge_type(cur, value, self.dialect)
+                        )
+        # Columns that only ever held nulls default to TEXT.
+        for key, t in columns.items():
+            if t is None:
+                columns[key] = sql_type_for(None, self.dialect)
         return columns, flat_map
 
     def _flatten_nested(

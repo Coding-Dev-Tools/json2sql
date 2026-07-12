@@ -46,6 +46,40 @@ def sql_type_for(value: Any, dialect: Dialect) -> str:
     return _TYPE_MAP[dialect].get(py_type, "TEXT")
 
 
+_TYPE_RANK = {
+    "BOOLEAN": 0,
+    "TINYINT(1)": 0,
+    "INTEGER": 1,
+    "INT": 1,
+    "DOUBLE PRECISION": 2,
+    "DOUBLE": 2,
+    "REAL": 2,
+    "TEXT": 3,
+    "VARCHAR(255)": 3,
+}
+
+
+def merge_type(current: str, value: Any, dialect: Dialect) -> str:
+    """Merge a column's current inferred SQL type with a new value's type.
+
+    Widens toward the most general compatible type so a column holding mixed
+    values produces valid SQL. Any string in a column forces TEXT (a numeric
+    column cannot hold a quoted string literal). A boolean mixed with a numeric
+    type also widens to TEXT because a boolean literal is not assignable to
+    INTEGER/REAL in strict SQL dialects.
+    """
+    new_type = sql_type_for(value, dialect)
+    if new_type == "TEXT" or current == "TEXT":
+        return "TEXT"
+    cur_rank = _TYPE_RANK.get(current, 3)
+    new_rank = _TYPE_RANK.get(new_type, 3)
+    # A boolean mixed with a numeric type is unsafe to keep numeric.
+    if 0 in (cur_rank, new_rank) and max(cur_rank, new_rank) > 0:
+        return "TEXT"
+    # Otherwise widen to the broader numeric type.
+    return current if cur_rank >= new_rank else new_type
+
+
 def quote_identifier(name: str, dialect: Dialect) -> str:
     """Quote an identifier (table/column name) for the given dialect."""
     if dialect == Dialect.MYSQL:

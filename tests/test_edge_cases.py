@@ -65,12 +65,17 @@ class TestConverterFlattenEdgeCases:
         result = converter.convert(json.dumps(data))
         assert "meta_count" in result
         # After upgrade, type should be INTEGER not TEXT
-        assert "INTEGER" in result
+        assert "TEXT" in result
         assert "'five'" in result
         assert "42" in result
 
     def test_type_upgrade_for_top_level_column(self):
-        """Top-level column type upgrades from TEXT to more specific type (line 175)."""
+        """Mixed string/int column falls back to TEXT so generated SQL stays valid (line 175).
+
+        A column that holds both a string ("hello") and an int (100) cannot be
+        INTEGER: the string literal would be rejected by the database. The safe,
+        correct type is TEXT (a numeric literal fits a text column).
+        """
         from json2sql.converter import JSONToSQLConverter
 
         data = [
@@ -79,13 +84,13 @@ class TestConverterFlattenEdgeCases:
         ]
         # Non-flatten path (_infer_columns)
         result = JSONToSQLConverter().convert(json.dumps(data))
-        assert "INTEGER" in result
+        assert "TEXT" in result
         assert "'hello'" in result
         assert "100" in result
 
         # Flatten path (_infer_columns_flattened else branch, line 175)
         result2 = JSONToSQLConverter(flatten=True).convert(json.dumps(data))
-        assert "INTEGER" in result2
+        assert "TEXT" in result2
         assert "'hello'" in result2
         assert "100" in result2
 
