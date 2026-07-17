@@ -47,7 +47,14 @@ class JSONToSQLConverter:
                 insert_sql(name, list(columns.keys()), rows, self.dialect)
             )
 
-        return "\n\n".join(statements)
+        result = "\n\n".join(s for s in statements if s)
+        # An empty object / nested-only root legitimately produces no SQL; say
+        # so explicitly instead of returning "" (avoids a silent green no-op).
+        return (
+            result
+            if result
+            else "-- No columns to generate (empty or nested-only object)."
+        )
 
     def generate_schema(self, json_text: str, table_name: str = "data") -> str:
         """Generate only CREATE TABLE statements from JSON data."""
@@ -69,14 +76,17 @@ class JSONToSQLConverter:
         else:
             columns = {"value": "TEXT"}
 
-        statements = [create_table_sql(table_name, columns, self.dialect)]
+        statements = []
+        if columns:
+            statements.append(create_table_sql(table_name, columns, self.dialect))
 
         # Process extra tables from flattening
         self._process_flatten(objects, table_name)
         for name, cols, _ in self._extra_tables:
             statements.append(create_table_sql(name, cols, self.dialect))
 
-        return "\n\n".join(statements)
+        result = "\n\n".join(statements)
+        return result if result else "-- No columns to generate."
 
     def _convert_objects(self, objects: list[dict], table_name: str) -> str:
         """Convert a list of JSON objects to SQL."""
@@ -117,6 +127,11 @@ class JSONToSQLConverter:
                         row.append(format_value(raw, self.dialect))
             rows.append(row)
 
+        if not columns:
+            # No scalar columns to emit (e.g. an empty object, or a root whose
+            # only content is nested arrays that became child tables). Emit
+            # nothing here rather than an invalid `CREATE TABLE "x" ();`.
+            return ""
         parts = [create_table_sql(table_name, columns, self.dialect)]
         if rows:
             parts.append(
@@ -133,19 +148,50 @@ class JSONToSQLConverter:
         parts.append(insert_sql(table_name, ["value"], rows, self.dialect))
         return "\n\n".join(parts)
 
+    def _infer_type(self, value: object) -> str | None:
+        """Return the SQL type for ``value``, or ``None`` when it is NULL.
+
+        A NULL value is treated as *unset* rather than as TEXT so a column
+        that first sees NULL can still take a concrete type when a non-NULL
+        value arrives later (e.g. ``[null, 42]`` -> INTEGER), and an
+        all-NULL column resolves to TEXT.
+        """
+        if value is None:
+            return None
+        return sql_type_for(value, self.dialect)
+
+    def _merge_type(self, current: str | None, inferred: str) -> str:
+        """Merge a previously inferred column type with a new value's type.
+
+        Returns ``TEXT`` whenever the two types are incompatible, because TEXT
+        is the only column type that is valid across Postgres/MySQL/SQLite.
+        This guarantees the generated INSERTs are executable for every dialect
+        instead of silently emitting a quoted string literal into a numeric
+        column (invalid SQL on Postgres/MySQL).
+        """
+        if current is None:
+            return inferred
+        if current == inferred:
+            return current
+        return "TEXT"
+
     def _infer_columns(self, objects: list[dict]) -> dict[str, str]:
-        """Infer column names and types from a list of objects."""
-        columns: dict[str, str] = {}
+        """Infer column names and types from a list of objects.
+
+        Type inference is order-independent and always yields SQL that is
+        valid for every supported dialect: once a column has seen values of
+        two incompatible types it collapses to TEXT.
+        """
+        columns: dict[str, str | None] = {}
         for obj in objects:
             for key, value in obj.items():
+                inferred = self._infer_type(value)
                 if key not in columns:
-                    columns[key] = sql_type_for(value, self.dialect)
-                elif value is not None:
-                    # Upgrade type if we find a non-null value
-                    inferred = sql_type_for(value, self.dialect)
-                    if columns[key] == "TEXT" and inferred != "TEXT":
-                        columns[key] = inferred
-        return columns
+                    columns[key] = inferred
+                elif inferred is not None:
+                    columns[key] = self._merge_type(columns[key], inferred)
+        # Resolve columns that never received a concrete value (all NULL) to TEXT.
+        return {k: (v if v is not None else "TEXT") for k, v in columns.items()}
 
     def _infer_columns_flattened(
         self, objects: list[dict], table_name: str
@@ -157,20 +203,21 @@ class JSONToSQLConverter:
             and flat_map maps flattened column name -> (parent_key, sub_key) for
             resolving values during row construction.
         """
-        columns: dict[str, str] = {}
+        columns: dict[str, str | None] = {}
         flat_map: dict[str, tuple[str, str]] = {}
         for obj in objects:
             for key, value in obj.items():
                 if isinstance(value, dict) and self.flatten:
                     for sub_key, sub_value in value.items():
                         flat_key = f"{key}_{sub_key}"
+                        inferred = self._infer_type(sub_value)
                         if flat_key not in columns:
-                            columns[flat_key] = sql_type_for(sub_value, self.dialect)
+                            columns[flat_key] = inferred
                             flat_map[flat_key] = (key, sub_key)
-                        elif sub_value is not None:
-                            inferred = sql_type_for(sub_value, self.dialect)
-                            if columns[flat_key] == "TEXT" and inferred != "TEXT":
-                                columns[flat_key] = inferred
+                        elif inferred is not None:
+                            columns[flat_key] = self._merge_type(
+                                columns[flat_key], inferred
+                            )
                 elif (
                     isinstance(value, list)
                     and value
@@ -180,13 +227,13 @@ class JSONToSQLConverter:
                     # Skip - goes to separate table
                     pass
                 else:
+                    inferred = self._infer_type(value)
                     if key not in columns:
-                        columns[key] = sql_type_for(value, self.dialect)
-                    elif value is not None:
-                        inferred = sql_type_for(value, self.dialect)
-                        if columns[key] == "TEXT" and inferred != "TEXT":
-                            columns[key] = inferred
-        return columns, flat_map
+                        columns[key] = inferred
+                    elif inferred is not None:
+                        columns[key] = self._merge_type(columns[key], inferred)
+        resolved = {k: (v if v is not None else "TEXT") for k, v in columns.items()}
+        return resolved, flat_map
 
     def _flatten_nested(
         self,
