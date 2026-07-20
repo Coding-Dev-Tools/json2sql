@@ -10,8 +10,7 @@ Convert JSON files and datasets to SQL INSERT statements. Supports nested JSON, 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Coding-Dev-Tools/json2sql/blob/main/LICENSE)
 |[![Open Source Alternative](https://img.shields.io/badge/Open_Source_Alternative-%E2%87%92-blue?logo=opensourceinitiative)](https://www.opensourcealternative.to/project/json2sql)
-[![CI](https://github.com/Coding-Dev-Tools/json2sql/actions/workflows/ci.yml/badge.svg)](https://github.com/Coding-Dev-Tools/json2sql/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/json2sql-cli)](https://pypi.org/project/json2sql-cli/)
+|[![CI](https://github.com/Coding-Dev-Tools/json2sql/actions/workflows/ci.yml/badge.svg)](https://github.com/Coding-Dev-Tools/json2sql/actions/workflows/ci.yml)
 
 
 
@@ -23,11 +22,7 @@ Real-world scenarios:
 
 ## Installation
 
-```bash
-pip install json2sql-cli
-```
-
-Or install directly from GitHub:
+> **Note:** json2sql is not yet on public PyPI. Install via GitHub directly:
 
 ```bash
 pip install git+https://github.com/Coding-Dev-Tools/json2sql.git
@@ -47,7 +42,7 @@ scoop install json2sql
 
 **npm (Node.js wrapper):**
 ```bash
-npm install -g json2sql-cli
+npm install -g json2sql
 ```
 Then run: `json2sql --help`
 
@@ -124,7 +119,7 @@ json2sql is one of eleven CLI tools in the Revenue Holdings suite. One license c
 ---
 
 <p align="center">
-  <sub>Part of <a href="https://coding-dev-tools.github.io/revenueholdings.dev/">Revenue Holdings</a> — CLI tools built by autonomous AI.</sub>
+  <sub>Part of <a href="https://revenueholdings.dev/">Revenue Holdings</a> — CLI tools built by autonomous AI.</sub>
 </p>
 
 ## License
