@@ -53,38 +53,46 @@ class TestConverterFlattenEdgeCases:
         assert "'missing'" in result or "NULL" in result
 
     def test_flatten_type_upgrade_for_flattened_column(self):
-        """flattened column type upgrades from TEXT to more specific type (line 165)."""
+        """Flattened column mixing a string and int collapses to TEXT (line 165)."""
         from json2sql.converter import JSONToSQLConverter
 
         converter = JSONToSQLConverter(flatten=True)
         data = [
-            {"id": 1, "meta": {"count": "five"}},  # string → TEXT
-            {"id": 2, "meta": {"count": 42}},  # integer → upgrade
+            {"id": 1, "meta": {"count": "five"}},  # string -> TEXT
+            {"id": 2, "meta": {"count": 42}},  # integer -> mixed -> TEXT
         ]
         result = converter.convert(json.dumps(data))
         assert "meta_count" in result
-        # After upgrade, type should be INTEGER not TEXT
-        assert "INTEGER" in result
+        # The flattened meta_count column saw a string AND an integer, so it must
+        # be TEXT (not widened to INTEGER) to keep the generated SQL valid.
+        assert "TEXT" in result
         assert "'five'" in result
         assert "42" in result
 
     def test_type_upgrade_for_top_level_column(self):
-        """Top-level column type upgrades from TEXT to more specific type (line 175)."""
+        """Mixed-type column collapses to TEXT so the generated SQL is valid.
+
+        A column that mixes a string and an integer must become TEXT (not
+        INTEGER): otherwise the string literal would be inserted into a numeric
+        column and rejected by Postgres/MySQL. See ``converter._merge_type``.
+        """
         from json2sql.converter import JSONToSQLConverter
 
         data = [
-            {"key": "hello"},  # string → TEXT
-            {"key": 100},  # integer → upgrade to INTEGER
+            {"key": "hello"},  # string -> TEXT
+            {"key": 100},  # integer -> would be INTEGER, but mixed -> TEXT
         ]
         # Non-flatten path (_infer_columns)
         result = JSONToSQLConverter().convert(json.dumps(data))
-        assert "INTEGER" in result
+        assert "TEXT" in result
+        assert "INTEGER" not in result  # must NOT widen to a numeric type
         assert "'hello'" in result
         assert "100" in result
 
-        # Flatten path (_infer_columns_flattened else branch, line 175)
+        # Flatten path (_infer_columns_flattened else branch)
         result2 = JSONToSQLConverter(flatten=True).convert(json.dumps(data))
-        assert "INTEGER" in result2
+        assert "TEXT" in result2
+        assert "INTEGER" not in result2
         assert "'hello'" in result2
         assert "100" in result2
 
