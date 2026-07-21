@@ -31,13 +31,13 @@ pip install git+https://github.com/Coding-Dev-Tools/json2sql.git
 Or install via Homebrew (macOS/Linux):
 ```bash
 brew tap Coding-Dev-Tools/tap
-brew install json2sql
+brew install json2sql-cli
 ```
 
 Or install via Scoop (Windows):
 ```bash
 scoop bucket add Coding-Dev-Tools https://github.com/Coding-Dev-Tools/scoop-bucket
-scoop install json2sql
+scoop install json2sql-cli
 ```
 
 **npm (Node.js wrapper):**

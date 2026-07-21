@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
+from pathlib import Path
 from unittest.mock import patch
 
 from typer.testing import CliRunner
@@ -13,16 +15,22 @@ from json2sql.converter import JSONToSQLConverter
 
 runner = CliRunner()
 
+# src/ dir so subprocesses (fresh interpreters) can import the package
+_SRC_DIR = str(Path(__file__).resolve().parent.parent / "src")
+
 
 class TestMainModule:
     """Tests for __main__.py entry point."""
 
     def test_main_module_runs_convert_help(self):
         """python -m json2sql convert --help works (covers __main__.py)."""
+        env = os.environ.copy()
+        env["PYTHONPATH"] = _SRC_DIR + os.pathsep + env.get("PYTHONPATH", "")
         result = subprocess.run(
             [sys.executable, "-m", "json2sql", "convert", "--help"],
             capture_output=True,
             text=False,
+            env=env,
         )
         assert result.returncode == 0
         assert b"Usage" in result.stdout
