@@ -73,5 +73,8 @@ research/
 fixtures/generated/
 .ruff_cache/
 
+# Scratch/debug files (cron artifacts)
+_run_tests.py
+
 # Added by release-prep
 node_modules
