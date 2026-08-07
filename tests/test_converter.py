@@ -535,3 +535,27 @@ class TestGenerateSchema:
         assert data["project"]["version"] == __version__, (
             f"pyproject.toml version ({data['project']['version']}) != __init__.__version__ ({__version__})"
         )
+
+
+class TestGenerateSchemaPrimitiveTypeInference:
+    """Regression: generate_schema must infer primitive column types, not always TEXT."""
+
+    def test_schema_primitive_int_array(self):
+        conv = JSONToSQLConverter(dialect=Dialect.POSTGRES)
+        data = json.dumps([1, 2, 3])
+        result = conv.generate_schema(data, table_name="nums")
+        assert "INTEGER" in result
+        assert "TEXT" not in result.split("CREATE TABLE")[1].split(")")[0]
+
+    def test_schema_primitive_float_array_mysql(self):
+        conv = JSONToSQLConverter(dialect=Dialect.MYSQL)
+        data = json.dumps([1.5, 2.5])
+        result = conv.generate_schema(data, table_name="vals")
+        assert "DOUBLE" in result
+
+    def test_schema_primitive_bool_array_sqlite(self):
+        conv = JSONToSQLConverter(dialect=Dialect.SQLITE)
+        data = json.dumps([True, False])
+        result = conv.generate_schema(data, table_name="flags")
+        # SQLite bool -> INTEGER
+        assert "INTEGER" in result

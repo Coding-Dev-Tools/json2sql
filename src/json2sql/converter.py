@@ -43,18 +43,12 @@ class JSONToSQLConverter:
         # Add any extra tables from flattening
         for name, columns, rows in self._extra_tables:
             statements.insert(0, create_table_sql(name, columns, self.dialect))
-            statements.append(
-                insert_sql(name, list(columns.keys()), rows, self.dialect)
-            )
+            statements.append(insert_sql(name, list(columns.keys()), rows, self.dialect))
 
         result = "\n\n".join(s for s in statements if s)
         # An empty object / nested-only root legitimately produces no SQL; say
         # so explicitly instead of returning "" (avoids a silent green no-op).
-        return (
-            result
-            if result
-            else "-- No columns to generate (empty or nested-only object)."
-        )
+        return result if result else "-- No columns to generate (empty or nested-only object)."
 
     def generate_schema(self, json_text: str, table_name: str = "data") -> str:
         """Generate only CREATE TABLE statements from JSON data."""
@@ -74,7 +68,9 @@ class JSONToSQLConverter:
             else:
                 columns = self._infer_columns(objects)
         else:
-            columns = {"value": "TEXT"}
+            # Primitive array — infer type from first element when available
+            col_type = sql_type_for(data[0], self.dialect) if isinstance(data, list) and data else "TEXT"
+            columns = {"value": col_type}
 
         statements = []
         if columns:
@@ -96,11 +92,7 @@ class JSONToSQLConverter:
             # Process nested arrays into child tables
             for obj in objects:
                 for key, value in obj.items():
-                    if (
-                        isinstance(value, list)
-                        and value
-                        and all(isinstance(v, dict) for v in value)
-                    ):
+                    if isinstance(value, list) and value and all(isinstance(v, dict) for v in value):
                         self._flatten_nested(table_name, key, value, obj)
         else:
             columns = self._infer_columns(objects)
@@ -134,9 +126,7 @@ class JSONToSQLConverter:
             return ""
         parts = [create_table_sql(table_name, columns, self.dialect)]
         if rows:
-            parts.append(
-                insert_sql(table_name, list(columns.keys()), rows, self.dialect)
-            )
+            parts.append(insert_sql(table_name, list(columns.keys()), rows, self.dialect))
         return "\n\n".join(parts)
 
     def _convert_primitives(self, values: list, table_name: str) -> str:
@@ -215,15 +205,8 @@ class JSONToSQLConverter:
                             columns[flat_key] = inferred
                             flat_map[flat_key] = (key, sub_key)
                         elif inferred is not None:
-                            columns[flat_key] = self._merge_type(
-                                columns[flat_key], inferred
-                            )
-                elif (
-                    isinstance(value, list)
-                    and value
-                    and self.flatten
-                    and all(isinstance(v, dict) for v in value)
-                ):
+                            columns[flat_key] = self._merge_type(columns[flat_key], inferred)
+                elif isinstance(value, list) and value and self.flatten and all(isinstance(v, dict) for v in value):
                     # Skip - goes to separate table
                     pass
                 else:
@@ -279,9 +262,5 @@ class JSONToSQLConverter:
             return
         for obj in objects:
             for key, value in obj.items():
-                if (
-                    isinstance(value, list)
-                    and value
-                    and all(isinstance(v, dict) for v in value)
-                ):
+                if isinstance(value, list) and value and all(isinstance(v, dict) for v in value):
                     self._flatten_nested(table_name, key, value, obj)
