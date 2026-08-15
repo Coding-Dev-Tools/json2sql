@@ -68,8 +68,8 @@ class JSONToSQLConverter:
             else:
                 columns = self._infer_columns(objects)
         else:
-            # Primitive array — infer type from first element when available
-            col_type = sql_type_for(data[0], self.dialect) if isinstance(data, list) and data else "TEXT"
+            # Primitive array — scan all elements to merge types safely
+            col_type = self._infer_primitive_column_type(data if isinstance(data, list) else [])
             columns = {"value": col_type}
 
         statements = []
@@ -129,9 +129,27 @@ class JSONToSQLConverter:
             parts.append(insert_sql(table_name, list(columns.keys()), rows, self.dialect))
         return "\n\n".join(parts)
 
+    def _infer_primitive_column_type(self, values: list) -> str:
+        """Infer the column type for a primitive array by scanning all elements.
+
+        Uses the same merge logic as object-column inference: if any two
+        non-NULL values have incompatible SQL types, the column collapses
+        to TEXT. This prevents declaring INTEGER for ``[1, "hello", 3]``
+        which would make the INSERT fail.
+        """
+        if not values:
+            return "TEXT"
+        resolved: str | None = None
+        for v in values:
+            inferred = self._infer_type(v)
+            if inferred is None:
+                continue
+            resolved = inferred if resolved is None else self._merge_type(resolved, inferred)
+        return resolved if resolved is not None else "TEXT"
+
     def _convert_primitives(self, values: list, table_name: str) -> str:
         """Convert a list of primitive values to SQL."""
-        col_type = sql_type_for(values[0] if values else None, self.dialect)
+        col_type = self._infer_primitive_column_type(values)
         columns = {"value": col_type}
         rows = [[format_value(v, self.dialect)] for v in values]
         parts = [create_table_sql(table_name, columns, self.dialect)]

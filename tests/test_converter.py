@@ -559,3 +559,52 @@ class TestGenerateSchemaPrimitiveTypeInference:
         result = conv.generate_schema(data, table_name="flags")
         # SQLite bool -> INTEGER
         assert "INTEGER" in result
+
+
+class TestMixedPrimitiveArrays:
+    """Regression: mixed-type primitive arrays must fall back to TEXT.
+
+    When a primitive array contains values of incompatible types (e.g.
+    [1, "hello", 3]), the column type must be TEXT so that every value
+    can be inserted without SQL errors. Sampling only the first element
+    would declare INTEGER and fail on the string.
+    """
+
+    def test_convert_mixed_int_and_string_falls_back_to_text(self, converter_postgres):
+        data = json.dumps([1, "hello", 3])
+        result = converter_postgres.convert(data, table_name="mixed")
+        assert "CREATE TABLE" in result
+        # Column type must be TEXT, not INTEGER
+        schema_part = result.split("INSERT INTO")[0]
+        assert "TEXT" in schema_part
+        assert "INTEGER" not in schema_part
+
+    def test_convert_mixed_int_and_float_falls_back_to_text(self, converter_postgres):
+        """int and float are different SQL types; mixed should be TEXT."""
+        data = json.dumps([1, 2.5, 3])
+        result = converter_postgres.convert(data, table_name="mixed")
+        schema_part = result.split("INSERT INTO")[0]
+        assert "TEXT" in schema_part
+
+    def test_generate_schema_mixed_primitives_falls_back_to_text(self, converter_postgres):
+        data = json.dumps([1, "two", 3.0])
+        result = converter_postgres.generate_schema(data, table_name="mixed")
+        assert "CREATE TABLE" in result
+        assert "TEXT" in result
+        assert "INTEGER" not in result
+
+    def test_convert_all_same_type_stays_specific(self, converter_postgres):
+        """Homogeneous arrays should still get specific types, not TEXT."""
+        data = json.dumps([1, 2, 3])
+        result = converter_postgres.convert(data, table_name="nums")
+        schema_part = result.split("INSERT INTO")[0]
+        assert "INTEGER" in schema_part
+        assert "TEXT" not in schema_part
+
+    def test_convert_mixed_with_nulls_skips_null_for_type(self, converter_postgres):
+        """NULLs should not force TEXT when all non-null values agree."""
+        data = json.dumps([1, None, 3])
+        result = converter_postgres.convert(data, table_name="nums")
+        schema_part = result.split("INSERT INTO")[0]
+        assert "INTEGER" in schema_part
+        assert "TEXT" not in schema_part
