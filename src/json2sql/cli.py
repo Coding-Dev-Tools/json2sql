@@ -14,9 +14,7 @@ try:
 except ImportError:
     import warnings
 
-    warnings.warn(
-        "revenueholdings-license not installed; license checks skipped", stacklevel=2
-    )
+    warnings.warn("revenueholdings-license not installed; license checks skipped", stacklevel=2)
 
     def require_license(product: str) -> None:  # type: ignore[misc]
         pass
@@ -45,9 +43,7 @@ def _app_callback(
 ) -> None:
     """Convert JSON files/datasets to SQL INSERT statements."""
     global _require_license_strict
-    _require_license_strict = require_license_flag or bool(
-        os.environ.get("REVENUEHOLDINGS_REQUIRE_LICENSE")
-    )
+    _require_license_strict = require_license_flag or bool(os.environ.get("REVENUEHOLDINGS_REQUIRE_LICENSE"))
 
 
 def _check_license(tool_name: str) -> None:
@@ -61,8 +57,7 @@ def _check_license(tool_name: str) -> None:
     except ImportError:
         if _require_license_strict:
             typer.echo(
-                "Error: revenueholdings-license is not installed. "
-                "Install it with: pip install revenueholdings-license",
+                "Error: revenueholdings-license is not installed. Install it with: pip install revenueholdings-license",
                 err=True,
             )
             raise typer.Exit(code=1) from None
@@ -120,9 +115,7 @@ def convert(
         dialect_enum = Dialect(dialect)
     except ValueError:
         valid = ", ".join(d.value for d in Dialect)
-        typer.echo(
-            f"Error: Unknown dialect '{dialect}'. Choose from: {valid}", err=True
-        )
+        typer.echo(f"Error: Unknown dialect '{dialect}'. Choose from: {valid}", err=True)
         raise typer.Exit(code=1) from None
 
     # Read input
@@ -165,8 +158,7 @@ def mcp() -> None:
         from click_to_mcp import run  # type: ignore[import-untyped]
     except ImportError:
         typer.echo(
-            "Error: click_to_mcp is required for MCP mode. "
-            "Install it with: pip install click-to-mcp",
+            "Error: click_to_mcp is required for MCP mode. Install it with: pip install click-to-mcp",
             err=True,
         )
         raise typer.Exit(code=1) from None
@@ -183,4 +175,3 @@ def version() -> None:
 
 if __name__ == "__main__":
     app()
-

@@ -106,16 +106,8 @@ def insert_sql(
     qcols = [quote_identifier(c, dialect) for c in columns]
     col_str = ", ".join(qcols)
 
-    if dialect == Dialect.POSTGRES and len(rows) > 1:
-        # Multi-row INSERT for PostgreSQL
-        values_parts = []
-        for row in rows:
-            val_str = ", ".join(row)
-            values_parts.append(f"    ({val_str})")
-        values_str = ",\n".join(values_parts)
-        return f"INSERT INTO {qtable} ({col_str})\nVALUES\n{values_str};"
-    elif dialect == Dialect.MYSQL and len(rows) > 1:
-        # Multi-row INSERT for MySQL
+    if dialect in (Dialect.POSTGRES, Dialect.MYSQL) and len(rows) > 1:
+        # Multi-row INSERT for PostgreSQL / MySQL
         values_parts = []
         for row in rows:
             val_str = ", ".join(row)
