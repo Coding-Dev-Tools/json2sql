@@ -131,3 +131,72 @@ def test_convert_never_emits_empty_column_list():
     )
     assert "();" not in out
     assert "INSERT INTO" in out
+
+
+class TestFlattenFKDetection:
+    """Tests for correct FK column detection in flatten mode.
+
+    The FK column in a child table must match the parent table's primary key
+    column name and type. Previously the code preferred "name" over explicit
+    ID fields like "user_id" or "users_id", causing a type mismatch.
+    """
+
+    @pytest.mark.parametrize("dialect", [Dialect.POSTGRES, Dialect.MYSQL, Dialect.SQLITE])
+    def test_flatten_prefers_id_over_name(self, dialect):
+        """When parent has both 'id' and 'name', 'id' should be used for FK."""
+        conv = JSONToSQLConverter(dialect=dialect, flatten=True)
+        data = json.dumps([
+            {"id": 1, "name": "Alice", "tags": [{"label": "x"}]},
+            {"id": 2, "name": "Bob", "tags": [{"label": "y"}]},
+        ])
+        out = conv.convert(data, table_name="users")
+        # FK column should be users_id (from parent's id), not users_name
+        assert '"users_id"' in out or '`users_id`' in out
+        assert '"users_name"' not in out and '`users_name`' not in out
+        # Parent table should have id column
+        assert '"id"' in out or '`id`' in out
+
+    @pytest.mark.parametrize("dialect", [Dialect.POSTGRES, Dialect.MYSQL, Dialect.SQLITE])
+    def test_flatten_prefers_table_specific_id(self, dialect):
+        """When parent has '{table}_id' (e.g., users_id), it should be used."""
+        conv = JSONToSQLConverter(dialect=dialect, flatten=True)
+        data = json.dumps([
+            {"users_id": 10, "name": "Alice", "tags": [{"label": "x"}]},
+            {"users_id": 20, "name": "Bob", "tags": [{"label": "y"}]},
+        ])
+        out = conv.convert(data, table_name="users")
+        # FK column should be users_users_id (from parent's users_id)
+        assert '"users_users_id"' in out or '`users_users_id`' in out
+        assert '"users_name"' not in out and '`users_name`' not in out
+
+    @pytest.mark.parametrize("dialect", [Dialect.POSTGRES, Dialect.MYSQL, Dialect.SQLITE])
+    def test_flatten_prefers_any_id_suffix(self, dialect):
+        """When parent has a singular '*_id' (e.g., user_id), it should be used over 'name'."""
+        conv = JSONToSQLConverter(dialect=dialect, flatten=True)
+        data = json.dumps([
+            {"user_id": 100, "name": "Alice", "tags": [{"label": "x"}]},
+            {"user_id": 200, "name": "Bob", "tags": [{"label": "y"}]},
+        ])
+        out = conv.convert(data, table_name="users")
+        # FK column should be users_user_id (from parent's user_id)
+        assert '"users_user_id"' in out or '`users_user_id`' in out
+        assert '"users_name"' not in out and '`users_name`' not in out
+        # FK type should be numeric (matching parent's user_id type)
+        if dialect == Dialect.MYSQL:
+            assert "INT" in out
+        else:
+            assert "INTEGER" in out
+
+    @pytest.mark.parametrize("dialect", [Dialect.POSTGRES, Dialect.MYSQL, Dialect.SQLITE])
+    def test_flatten_fallback_to_name_when_no_id(self, dialect):
+        """When parent has no ID-like field, 'name' is used as fallback."""
+        conv = JSONToSQLConverter(dialect=dialect, flatten=True)
+        data = json.dumps([
+            {"name": "Alice", "tags": [{"label": "x"}]},
+            {"name": "Bob", "tags": [{"label": "y"}]},
+        ])
+        out = conv.convert(data, table_name="users")
+        # FK column should be users_name (fallback)
+        assert '"users_name"' in out or '`users_name`' in out
+        # Parent table should have name column
+        assert '"name"' in out or '`name`' in out
