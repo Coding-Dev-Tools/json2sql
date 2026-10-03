@@ -108,3 +108,41 @@ class TestConverterExtraEdgePaths:
         result = converter.convert(json.dumps([{"name": "test"}]))
         assert "INSERT INTO" in result
         assert "'test'" in result
+
+
+def test_flatten_multiple_parent_rows_single_child_table():
+    """Multiple parent rows with nested arrays yield ONE child table with all rows."""
+    import json as _json
+
+    from json2sql.converter import JSONToSQLConverter
+
+    data = [
+        {"id": 1, "name": "a", "tags": [{"label": "x", "score": 1}]},
+        {
+            "id": 2,
+            "name": "b",
+            "tags": [{"label": "y", "score": 2}, {"label": "z", "score": 3}],
+        },
+    ]
+    text = _json.dumps(data)
+    out = JSONToSQLConverter(flatten=True).convert(text, "users")
+    assert out.count('CREATE TABLE "users_tags"') == 1
+    assert "'z', 3" in out and "'y', 2" in out and "'x', 1" in out
+
+    schema = JSONToSQLConverter(flatten=True).generate_schema(text, "users")
+    assert schema.count('CREATE TABLE "users_tags"') == 1
+
+
+def test_flatten_child_rows_keep_own_parent_fk():
+    """Each child row links to its own parent via the FK column."""
+    import json as _json
+
+    from json2sql.converter import JSONToSQLConverter
+
+    data = [
+        {"id": 10, "items": [{"sku": "a1"}]},
+        {"id": 20, "items": [{"sku": "b1"}]},
+    ]
+    out = JSONToSQLConverter(flatten=True).convert(_json.dumps(data), "orders")
+    assert "(10, 'a1')" in out
+    assert "(20, 'b1')" in out

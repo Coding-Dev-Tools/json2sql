@@ -1,2 +1,0 @@
-[console_scripts]
-json2sql = json2sql.cli:app

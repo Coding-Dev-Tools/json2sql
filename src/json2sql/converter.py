@@ -93,7 +93,10 @@ class JSONToSQLConverter:
         # When flattening, compute the full column set first so rows align
         if self.flatten:
             columns, flat_map = self._infer_columns_flattened(objects, table_name)
-            # Process nested arrays into child tables
+            # Process nested arrays into child tables, grouped by key so that
+            # each nested array produces exactly ONE child table whose INSERT
+            # covers every parent row's children.
+            nested_groups: dict[str, tuple[list[dict], list[dict]]] = {}
             for obj in objects:
                 for key, value in obj.items():
                     if (
@@ -101,7 +104,11 @@ class JSONToSQLConverter:
                         and value
                         and all(isinstance(v, dict) for v in value)
                     ):
-                        self._flatten_nested(table_name, key, value, obj)
+                        children, parents = nested_groups.setdefault(key, ([], []))
+                        children.extend(value)
+                        parents.extend([obj] * len(value))
+            for key, (children, parents) in nested_groups.items():
+                self._flatten_nested(table_name, key, children, parents)
         else:
             columns = self._infer_columns(objects)
             flat_map = {}
@@ -240,27 +247,50 @@ class JSONToSQLConverter:
         parent_table: str,
         key: str,
         nested_objects: list[dict],
-        parent_obj: dict,
+        parent_objs: list[dict],
     ) -> None:
-        """Flatten a nested array of objects into a separate table."""
+        """Flatten nested arrays of objects into a single child table.
+
+        ``nested_objects`` and ``parent_objs`` are aligned lists: each child
+        row links back to its own parent via the foreign key. Grouping all
+        parents' children into one table avoids emitting duplicate
+        ``CREATE TABLE`` statements when multiple rows carry nested arrays.
+        """
         child_table = f"{parent_table}_{key}"
         columns = self._infer_columns(nested_objects)
-        # Add parent reference — only if no existing column has the FK name
+        # Add parent reference — only if no existing column has the FK name.
+        # Prefer explicit ID fields over generic "name" to ensure the FK column
+        # type matches the parent table's primary key type.
         parent_ref = None
-        for pk in ("id", "name", parent_table + "_id"):
-            if pk in parent_obj:
+        # Priority order for parent reference key:
+        # 1. "id" (generic primary key)
+        # 2. "{parent_table}_id" (table-specific, e.g., "users_id")
+        # 3. Any key ending in "_id" found in parent objects (e.g., "user_id")
+        # 4. "name" (fallback only when no ID-like field exists)
+        candidate_keys = ["id", f"{parent_table}_id"]
+        # Add any *_id keys found in parent objects (excluding already listed)
+        seen = set(candidate_keys)
+        for obj in parent_objs:
+            for k in obj:
+                if k.endswith("_id") and k not in seen:
+                    candidate_keys.append(k)
+                    seen.add(k)
+        candidate_keys.append("name")
+        for pk in candidate_keys:
+            if any(pk in parent_obj for parent_obj in parent_objs):
                 parent_ref = pk
                 break
         fk_col = f"{parent_table}_{parent_ref}" if parent_ref else None
         fk_already_exists = fk_col and fk_col in columns
         if fk_col and not fk_already_exists:
+            fk_parent = next(p for p in parent_objs if parent_ref in p)
             columns = {
-                fk_col: sql_type_for(parent_obj[parent_ref], self.dialect),
+                fk_col: sql_type_for(fk_parent[parent_ref], self.dialect),
                 **columns,
             }
 
         rows: list[list[str]] = []
-        for nested in nested_objects:
+        for nested, parent_obj in zip(nested_objects, parent_objs, strict=True):
             row: list[str] = []
             for col_name in columns:
                 if col_name == fk_col and not fk_already_exists:
@@ -277,6 +307,7 @@ class JSONToSQLConverter:
             return
         if not objects or not isinstance(objects[0], dict):
             return
+        nested_groups: dict[str, tuple[list[dict], list[dict]]] = {}
         for obj in objects:
             for key, value in obj.items():
                 if (
@@ -284,4 +315,8 @@ class JSONToSQLConverter:
                     and value
                     and all(isinstance(v, dict) for v in value)
                 ):
-                    self._flatten_nested(table_name, key, value, obj)
+                    children, parents = nested_groups.setdefault(key, ([], []))
+                    children.extend(value)
+                    parents.extend([obj] * len(value))
+        for key, (children, parents) in nested_groups.items():
+            self._flatten_nested(table_name, key, children, parents)
