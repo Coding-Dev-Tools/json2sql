@@ -40,12 +40,6 @@ scoop bucket add Coding-Dev-Tools https://github.com/Coding-Dev-Tools/scoop-buck
 scoop install json2sql-cli
 ```
 
-**npm (Node.js wrapper):**
-```bash
-npm install -g json2sql
-```
-Then run: `json2sql --help`
-
 ## Quick Start
 
 ```bash
